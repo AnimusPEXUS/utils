@@ -1,0 +1,5 @@
+saves time writting CLI application boilerplait: 
+simply define tree of commands and feed it alon with os.Args to
+RunCmd function
+
+examples are in tests dir
