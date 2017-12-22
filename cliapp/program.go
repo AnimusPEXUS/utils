@@ -234,6 +234,10 @@ func RunCmd(
 					},
 				)
 
+				if ret == nil {
+					ret = &AppResult{Code: 0}
+				}
+
 				if ret.Code == 0 && ret.Message == "" {
 					ret.Message = "No Error"
 				}

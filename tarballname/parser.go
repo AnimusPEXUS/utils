@@ -75,6 +75,15 @@ func (a acceptable_tarball_ext_sorter) Less(i, j int) bool {
 	return len(a[i]) > len(a[j])
 }
 
+func IsPossibleTarballName(filename string) bool {
+	for _, i := range ACCEPTABLE_SOURCE_NAME_EXTENSIONS_REV_SORTED_BY_LENGTH {
+		if strings.HasSuffix(filename, i) {
+			return true
+		}
+	}
+	return false
+}
+
 type (
 	SlicedName []string
 
@@ -542,7 +551,6 @@ func ParseEx(
 ) (*ParsedTarballName, error) {
 	var (
 		ret *ParsedTarballName
-		err error = nil
 
 		version_finder_function   VersionFinderFunction   = DefaultVersionFinder
 		version_splitter_function VersionSplitterFunction = DefaultVersionSplitter
@@ -572,9 +580,7 @@ func ParseEx(
 	}
 
 	if len(extension) == 0 {
-		err = errors.New("not a tarball extension")
-		ret = nil
-		goto exit
+		return nil, errors.New("not a tarball extension")
 	}
 
 	version_finder_function, version_splitter_function =
@@ -588,7 +594,7 @@ func ParseEx(
 
 	if !found {
 		ret = nil
-		goto exit
+		return nil, errors.New("not found version information in tarball name")
 	}
 
 	ret.Basename = basename
@@ -633,9 +639,8 @@ func ParseEx(
 	ret.Status.Str = strings.Join(ret.Status.Arr, ".")
 
 	ret.Status.DirtyStr = strings.Join(ret.Status.DirtyArr, "")
-exit:
 
-	return ret, err
+	return ret, nil
 }
 
 func Parse(full_path_or_basename string) (*ParsedTarballName, error) {
