@@ -140,12 +140,14 @@ func (self *Logger) addOutputOpt(out interface{}, opts *OutputOptions) uint64 {
 	return ret
 }
 
+// out type must conform to io.Writer or io.WriteCloser
 func (self *Logger) AddOutputOpt(out interface{}, opts *OutputOptions) uint64 {
 	self.mutex.Lock()
 	defer self.mutex.Unlock()
 	return self.addOutputOpt(out, opts)
 }
 
+// out type must conform to io.Writer or io.WriteCloser
 func (self *Logger) AddOutput(out interface{}) uint64 {
 	self.mutex.Lock()
 	defer self.mutex.Unlock()

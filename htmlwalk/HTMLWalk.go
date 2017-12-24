@@ -3,6 +3,7 @@ package htmlwalk
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"github.com/AnimusPEXUS/utils/cache01"
 	"github.com/AnimusPEXUS/utils/directory"
 	"github.com/AnimusPEXUS/utils/filetools"
+	"github.com/AnimusPEXUS/utils/logger"
 	"github.com/AnimusPEXUS/utils/set"
 	"github.com/antchfx/xquery/html"
 )
@@ -25,6 +27,8 @@ type HTMLWalk struct {
 
 	cache *cache01.CacheDir
 
+	log *logger.Logger
+
 	tree *directory.File
 }
 
@@ -32,6 +36,7 @@ func NewHTMLWalk(
 	scheme string,
 	host string,
 	cache *cache01.CacheDir,
+	log *logger.Logger,
 ) (*HTMLWalk, error) {
 	ret := new(HTMLWalk)
 	ret.scheme = scheme
@@ -39,8 +44,22 @@ func NewHTMLWalk(
 
 	ret.cache = cache
 
+	ret.log = log
+
 	ret.tree = directory.NewFile(nil, "", true, nil)
 	return ret, nil
+}
+
+func (self *HTMLWalk) Log(txt string) {
+	if self.log != nil {
+		self.log.Info(txt)
+	}
+}
+
+func (self *HTMLWalk) LogE(txt string) {
+	if self.log != nil {
+		self.log.Error(txt)
+	}
 }
 
 func (self *HTMLWalk) ListDir(pth string) (
@@ -56,6 +75,17 @@ func (self *HTMLWalk) ListDir(pth string) (
 	c, err := self.cache.Cache(
 		pth,
 		func() ([]byte, error) {
+
+			self.Log(
+				fmt.Sprintf(
+					"updating cache %s",
+					(&url.URL{
+						Scheme: self.scheme,
+						Host:   self.host,
+						Path:   pth,
+					}).String(),
+				),
+			)
 
 			d, f, err := self.ListDirNotCached(pth)
 			if err != nil {
