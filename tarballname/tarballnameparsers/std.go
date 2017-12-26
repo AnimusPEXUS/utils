@@ -1,8 +1,6 @@
 package tarballnameparsers
 
 import (
-	"strconv"
-
 	"github.com/AnimusPEXUS/utils/tarballname"
 	"github.com/AnimusPEXUS/utils/tarballname/tarballnameparsers/types"
 )
@@ -22,18 +20,11 @@ func (self *TarballNameParser_Std) ParseName(value string) (
 	ret := new(types.ParseResult)
 
 	ret.HaveVersion = true
-
-	ret.Version = make([]uint, 0)
-
-	for _, i := range result.Version.ParsedVersionOrStatus.Arr {
-		ii, err := strconv.Atoi(i)
-		if err != nil {
-			return nil, err
-		}
-		ret.Version = append(ret.Version, uint(ii))
-	}
+	ret.Version = result.Version
 
 	ret.HaveStatus = false
+	ret.Status = result.Status
+
 	ret.HaveBuildId = false
 
 	ret.Name = result.Name

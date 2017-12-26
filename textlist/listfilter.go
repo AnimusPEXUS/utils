@@ -8,20 +8,41 @@ import (
 	"github.com/AnimusPEXUS/utils/set"
 )
 
+/*
+create functions for FilterList().
+parameter - parameter defined in filter and passed to function
+case_sensitive - if function must take case into account
+value_to_match - value which function have to check
+data - can be user to pass some additional data to functions
+*/
 type FilterFunctions map[string]func(
 	parameter string,
 	case_sensitive bool,
 	value_to_match string,
+	data map[string]interface{},
 ) (bool, error)
 
 type Filters []*FilterItem
 
+// structure for one of items of filter text parse result
 type FilterItem struct {
-	Add           bool
-	NotFunc       bool
-	Func          string
+	// if [function result]+[NotFunc] == true.
+	// if Add == true, then value which is chacked by this filter item,
+	// considered to be added to result,
+	// else, if Add == false, - item should be removed from result
+	Add bool
+
+	// apply boolean not to function result
+	NotFunc bool
+
+	// name of function, which FilterList have to use
+	Func string
+
+	// if function have to be case sensetive
 	CaseSensitive bool
-	FuncParam     string
+
+	// some functioning data, to be passed to function
+	FuncParam string
 }
 
 func ParseFilterTextLinesMust(text []string) Filters {
@@ -84,13 +105,21 @@ func ParseFilterTextLines(text []string) (Filters, error) {
 	return ret, nil
 }
 
-var StdFunctions = FilterFunctions{}
+// TODO: im suspecting this is a garbage. commentedout on 25 Dec 2017
+// var StdFunctions = FilterFunctions{}
+// func FilterListStd(in_list []string, filters Filters) ([]string, error) {
+// 	return FilterList(in_list, filters, StdFunctions)
+// }
 
-func FilterListStd(in_list []string, filters Filters) ([]string, error) {
-	return FilterList(in_list, filters, StdFunctions)
-}
-
-func FilterList(in_list []string, filters Filters, functions FilterFunctions) (
+// Filters subject date passed by in_list, with filter set passed by filters.
+// functions should contain functions asked by filters.
+// data - additional data to pass to functions
+func FilterList(
+	in_list []string,
+	filters Filters,
+	functions FilterFunctions,
+	data map[string]interface{},
+) (
 	[]string,
 	error,
 ) {
@@ -121,9 +150,14 @@ func FilterList(in_list []string, filters Filters, functions FilterFunctions) (
 				filter.FuncParam,
 				filter.CaseSensitive,
 				line,
+				data,
 			)
 			if err != nil {
 				return out_list.ListStrings(), err
+			}
+
+			if filter.NotFunc {
+				matched = !matched
 			}
 
 			if matched {

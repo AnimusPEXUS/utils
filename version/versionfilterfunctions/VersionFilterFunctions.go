@@ -10,7 +10,7 @@ import (
 	"github.com/AnimusPEXUS/utils/version"
 )
 
-var StdVersionFilterFunctions textlist.FilterFunctions
+var VersionFilterFunctions textlist.FilterFunctions
 
 func VersionCheck(
 	function string,
@@ -63,51 +63,57 @@ func VersionCheck(
 }
 
 func init() {
-	StdVersionFilterFunctions = make(textlist.FilterFunctions)
+	VersionFilterFunctions = make(textlist.FilterFunctions)
 
-	for k, v := range StdVersionFilterFunctions {
-		StdVersionFilterFunctions[k] = v
-	}
+	// for k, v := range VersionFilterFunctions {
+	// 	VersionFilterFunctions[k] = v
+	// }
 
-	StdVersionFilterFunctions["version-<"] = func(
+	VersionFilterFunctions["version-<"] = func(
 		parameter string,
 		case_sensitive bool,
 		value_to_match string,
+		data map[string]interface{},
 	) (bool, error) {
 		return VersionCheck("<", parameter, value_to_match)
 	}
-	StdVersionFilterFunctions["version-<="] = func(
+	VersionFilterFunctions["version-<="] = func(
 		parameter string,
 		case_sensitive bool,
 		value_to_match string,
+		data map[string]interface{},
 	) (bool, error) {
 		return VersionCheck("<=", parameter, value_to_match)
 	}
-	StdVersionFilterFunctions["version-=="] = func(
+	VersionFilterFunctions["version-=="] = func(
 		parameter string,
 		case_sensitive bool,
 		value_to_match string,
+		data map[string]interface{},
 	) (bool, error) {
 		return VersionCheck("==", parameter, value_to_match)
 	}
-	StdVersionFilterFunctions["version->="] = func(
+	VersionFilterFunctions["version->="] = func(
 		parameter string,
 		case_sensitive bool,
 		value_to_match string,
+		data map[string]interface{},
 	) (bool, error) {
 		return VersionCheck(">=", parameter, value_to_match)
 	}
-	StdVersionFilterFunctions["version->"] = func(
+	VersionFilterFunctions["version->"] = func(
 		parameter string,
 		case_sensitive bool,
 		value_to_match string,
+		data map[string]interface{},
 	) (bool, error) {
 		return VersionCheck(">", parameter, value_to_match)
 	}
-	StdVersionFilterFunctions["version-!="] = func(
+	VersionFilterFunctions["version-!="] = func(
 		parameter string,
 		case_sensitive bool,
 		value_to_match string,
+		data map[string]interface{},
 	) (bool, error) {
 		return VersionCheck("!=", parameter, value_to_match)
 	}

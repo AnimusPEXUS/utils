@@ -59,8 +59,13 @@ func (self *VersionTree) Add(basename string) error {
 		return errors.New("tarball name dismatch")
 	}
 
-	version_list := make([]uint, len(res.Version))
-	copy(version_list, res.Version)
+	version_list, err := res.Version.ArrUInt()
+	if err != nil {
+		return err
+	}
+
+	// version_list := make([]uint, len(res.Version))
+	// copy(version_list, res.Version)
 
 	// version_list := res.VersionStrings()
 

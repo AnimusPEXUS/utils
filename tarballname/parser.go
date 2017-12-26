@@ -84,6 +84,13 @@ func IsPossibleTarballName(filename string) bool {
 	return false
 }
 
+func IsPossibleTarballNameErr(filename string) error {
+	if !IsPossibleTarballName(filename) {
+		return errors.New("file name doesn't looks like tarball's")
+	}
+	return nil
+}
+
 type (
 	SlicedName []string
 
@@ -517,6 +524,18 @@ func (self *ParsedVersionOrStatus) ArrInt() ([]int, error) {
 	return ret, nil
 }
 
+func (self *ParsedVersionOrStatus) ArrUInt() ([]uint, error) {
+	res, err := self.ArrInt()
+	if err != nil {
+		return []uint{}, err
+	}
+	ret := make([]uint, len(res))
+	for _, i := range res {
+		ret = append(ret, uint(i))
+	}
+	return ret, nil
+}
+
 type ParsedTarballName struct {
 	Basename  string
 	Name      string
@@ -579,9 +598,9 @@ func ParseEx(
 		}
 	}
 
-	if len(extension) == 0 {
-		return nil, errors.New("not a tarball extension")
-	}
+	// if len(extension) == 0 && !allow_non_extension {
+	// 	return nil, errors.New("not a tarball extension")
+	// }
 
 	version_finder_function, version_splitter_function =
 		versions_selector_function(basename)

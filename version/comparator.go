@@ -55,7 +55,16 @@ func SortByVersion(names []string, nameparser types.TarballNameParserI) error {
 				return errors.New("by version sort name dismuch")
 			}
 
-			res := Compare(pi.VersionInt(), pj.VersionInt())
+			vi, err := pi.Version.ArrInt()
+			if err != nil {
+				return err
+			}
+			vj, err := pj.Version.ArrInt()
+			if err != nil {
+				return err
+			}
+
+			res := Compare(vi, vj)
 			// fmt.Println("comp res", pi.VersionInt(), res, pj.VersionInt())
 			if res == 1 {
 				names[i], names[j] = names[j], names[i]
