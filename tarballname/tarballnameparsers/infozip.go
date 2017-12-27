@@ -6,7 +6,7 @@ import (
 
 type TarballNameParser_InfoZip struct{}
 
-func (self *TarballNameParser_InfoZip) ParseName(value string) (
+func (self *TarballNameParser_InfoZip) Parse(value string) (
 	*tarballname.ParsedTarballName,
 	error,
 ) {

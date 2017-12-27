@@ -6,7 +6,7 @@ import (
 
 type TarballNameParser_Std struct{}
 
-func (self *TarballNameParser_Std) ParseName(value string) (
+func (self *TarballNameParser_Std) Parse(value string) (
 	*tarballname.ParsedTarballName,
 	error,
 ) {

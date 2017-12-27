@@ -69,7 +69,7 @@ func StatusFilterFunction(
 		return false, err
 	}
 
-	parse_res, err := parser.ParseName(value_to_match)
+	parse_res, err := parser.Parse(value_to_match)
 	if err != nil {
 		return false, err
 	}

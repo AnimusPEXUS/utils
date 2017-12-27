@@ -30,7 +30,7 @@ func VersionCheck(
 		return false, err
 	}
 
-	res, err := p.ParseName(value_to_match)
+	res, err := p.Parse(value_to_match)
 	if err != nil {
 		return false, err
 	}

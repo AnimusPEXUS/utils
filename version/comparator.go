@@ -39,14 +39,14 @@ func Compare(one, two []int) int {
 	return 0
 }
 
-func SortByVersion(names []string, nameparser types.TarballNameParserI) error {
+func SortByVersion(names []string, parser types.TarballNameParserI) error {
 	for i := 0; i != len(names)-1; i++ {
 		for j := i + 1; j != len(names); j++ {
-			pi, err := nameparser.ParseName(names[i])
+			pi, err := parser.Parse(names[i])
 			if err != nil {
 				return err
 			}
-			pj, err := nameparser.ParseName(names[j])
+			pj, err := parser.Parse(names[j])
 			if err != nil {
 				return err
 			}

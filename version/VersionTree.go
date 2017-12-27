@@ -9,32 +9,30 @@ import (
 	"github.com/AnimusPEXUS/utils/directory"
 	"github.com/AnimusPEXUS/utils/filepath"
 	"github.com/AnimusPEXUS/utils/set"
-	"github.com/AnimusPEXUS/utils/tarballname/tarballnameparsers"
 	"github.com/AnimusPEXUS/utils/tarballname/tarballnameparsers/types"
 )
 
 type VersionTree struct {
 	d *directory.File
 
-	tarball_name string
-	//tarball_name_parser     string
-	tarball_name_parser_obj types.TarballNameParserI
+	tarball_name        string
+	tarball_name_parser types.TarballNameParserI
 }
 
 func NewVersionTree(
 	tarball_name string,
-	tarball_name_parser string,
+	tarball_name_parser types.TarballNameParserI,
 ) (*VersionTree, error) {
 	ret := new(VersionTree)
 
 	ret.tarball_name = tarball_name
-	//ret.tarball_name_parser = tarball_name_parser
+	ret.tarball_name_parser = tarball_name_parser
 
-	if t, err := tarballnameparsers.Get(tarball_name_parser); err != nil {
-		return nil, err
-	} else {
-		ret.tarball_name_parser_obj = t
-	}
+	// if t, err := tarballnameparsers.Get(tarball_name_parser); err != nil {
+	// 	return nil, err
+	// } else {
+	// 	ret.tarball_name_parser_obj = tarball_name_parser
+	// }
 
 	ret.d = directory.NewFile(
 		nil,
@@ -50,7 +48,7 @@ func (self *VersionTree) Add(basename string) error {
 
 	basename = path.Base(basename)
 
-	res, err := self.tarball_name_parser_obj.ParseName(basename)
+	res, err := self.tarball_name_parser.Parse(basename)
 	if err != nil {
 		return err
 	}
