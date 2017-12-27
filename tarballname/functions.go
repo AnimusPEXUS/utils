@@ -2,11 +2,9 @@ package tarballname
 
 import (
 	"errors"
-	"fmt"
 	"path"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 )
 
@@ -105,9 +103,6 @@ type (
 
 	MapOfSinglesAndMultiples (map[string](*SinglesAndMultiples))
 	MapOfSinglesOrMultiples  (map[string](*SinglesOrMultiples))
-
-	ParsedVersion struct{ ParsedVersionOrStatus }
-	ParsedStatus  struct{ ParsedVersionOrStatus }
 
 	VersionFinderFunction func(name_sliced SlicedName) (*Slice, bool)
 
@@ -419,27 +414,6 @@ func defaultVersionSplitterSub0(parsed_version *ParsedVersion) {
 
 }
 
-func DefaultVersionSplitter(
-	name_sliced SlicedName,
-	most_possible_version Slice,
-) *ParsedVersion {
-	var (
-		ret *ParsedVersion
-	)
-
-	ret = new(ParsedVersion)
-
-	ret.DirtyArr = append(ret.DirtyArr[:0], ret.DirtyArr[:0]...)
-
-	for _, j := range name_sliced[most_possible_version[0]:most_possible_version[1]] {
-		ret.DirtyArr = append(ret.DirtyArr, j)
-	}
-
-	defaultVersionSplitterSub0(ret)
-
-	return ret
-}
-
 func InfoZipVersionFinder(
 	name_sliced SlicedName,
 ) (
@@ -469,98 +443,38 @@ func InfoZipVersionSplitter(
 	return ret
 }
 
-func DefaultVersionsFunctionSelector(
+// func DefaultVersionsFunctionSelector(
+// 	tarballbasename string,
+// ) (
+// 	VersionFinderFunction,
+// 	VersionSplitterFunction,
+// ) {
+// 	var (
+// 		version_finder_function   VersionFinderFunction   = DefaultVersionFinder
+// 		version_splitter_function VersionSplitterFunction = DefaultVersionSplitter
+// 	)
+//
+// 	res, err := regexp.MatchString(`^(un)?zip\d+.*$`, tarballbasename)
+//
+// 	if err == nil && res == true {
+// 		version_finder_function = InfoZipVersionFinder
+// 		version_splitter_function = InfoZipVersionSplitter
+// 	}
+//
+// 	return version_finder_function, version_splitter_function
+//
+// }
+
+func StrictVersionsFunctionSelector(
 	tarballbasename string,
-) (
-	VersionFinderFunction,
-	VersionSplitterFunction,
-) {
-	var (
-		version_finder_function   VersionFinderFunction   = DefaultVersionFinder
-		version_splitter_function VersionSplitterFunction = DefaultVersionSplitter
-	)
-
-	res, err := regexp.MatchString(`^(un)?zip\d+.*$`, tarballbasename)
-
-	if err == nil && res == true {
-		version_finder_function = InfoZipVersionFinder
-		version_splitter_function = InfoZipVersionSplitter
-	}
-
-	return version_finder_function, version_splitter_function
-
+) (VersionFinderFunction, VersionSplitterFunction) {
+	return DefaultVersionFinder, DefaultVersionSplitter
 }
 
-type ParsedVersionOrStatus struct {
-	Str      string
-	DirtyStr string
-	Arr      []string
-	DirtyArr []string
-}
-
-func (self *ParsedVersionOrStatus) InfoText() string {
-	ret := fmt.Sprintf(`  dirty_arr: %v
-  dirty_str: "%s"
-  arr:       %v
-  str:       "%s"`,
-		self.DirtyArr,
-		self.DirtyStr,
-		self.Arr,
-		self.Str,
-	)
-
-	return ret
-}
-
-func (self *ParsedVersionOrStatus) ArrInt() ([]int, error) {
-	ret := make([]int, 0)
-	for _, i := range self.Arr {
-		res, err := strconv.Atoi(i)
-		if err != nil {
-			return ret, err
-		}
-		ret = append(ret, res)
-	}
-	return ret, nil
-}
-
-func (self *ParsedVersionOrStatus) ArrUInt() ([]uint, error) {
-	res, err := self.ArrInt()
-	if err != nil {
-		return []uint{}, err
-	}
-	ret := make([]uint, len(res))
-	for _, i := range res {
-		ret = append(ret, uint(i))
-	}
-	return ret, nil
-}
-
-type ParsedTarballName struct {
-	Basename  string
-	Name      string
-	Extension string
-	Version   ParsedVersion
-	Status    ParsedStatus
-}
-
-func (self *ParsedTarballName) InfoText() string {
-	ret := fmt.Sprintf(` Basename:  "%s"
- Name:      "%s"
- Extension: "%s"
- Version:
-%s
- Status:
-%s
-`,
-		self.Basename,
-		self.Name,
-		self.Extension,
-		self.Version.InfoText(),
-		self.Status.InfoText(),
-	)
-
-	return ret
+func InfoZipVersionsFunctionSelector(
+	tarballbasename string,
+) (VersionFinderFunction, VersionSplitterFunction) {
+	return InfoZipVersionFinder, InfoZipVersionSplitter
 }
 
 func ParseEx(
@@ -662,11 +576,29 @@ func ParseEx(
 	return ret, nil
 }
 
-func Parse(full_path_or_basename string) (*ParsedTarballName, error) {
+// func Parse(full_path_or_basename string) (*ParsedTarballName, error) {
+// 	ret, err := ParseEx(
+// 		full_path_or_basename,
+// 		ACCEPTABLE_TARBALL_EXTENSIONS,
+// 		DefaultVersionsFunctionSelector,
+// 	)
+// 	return ret, err
+// }
+
+func ParseStrict(full_path_or_basename string) (*ParsedTarballName, error) {
 	ret, err := ParseEx(
 		full_path_or_basename,
 		ACCEPTABLE_TARBALL_EXTENSIONS,
-		DefaultVersionsFunctionSelector,
+		StrictVersionsFunctionSelector,
+	)
+	return ret, err
+}
+
+func ParseInfoZip(full_path_or_basename string) (*ParsedTarballName, error) {
+	ret, err := ParseEx(
+		full_path_or_basename,
+		ACCEPTABLE_TARBALL_EXTENSIONS,
+		InfoZipVersionsFunctionSelector,
 	)
 	return ret, err
 }

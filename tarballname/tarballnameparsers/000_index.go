@@ -18,4 +18,8 @@ var Index = map[string](func() types.TarballNameParserI){
 	"std": func() types.TarballNameParserI {
 		return new(TarballNameParser_Std)
 	},
+
+	"infozip": func() types.TarballNameParserI {
+		return new(TarballNameParser_InfoZip)
+	},
 }

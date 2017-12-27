@@ -5,7 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/AnimusPEXUS/utils/tarballname"
+	"github.com/AnimusPEXUS/aipsetup/basictypes"
+	"github.com/AnimusPEXUS/utils/tarballname/tarballnameparsers"
 	"github.com/AnimusPEXUS/utils/textlist"
 	"github.com/AnimusPEXUS/utils/version"
 )
@@ -16,8 +17,20 @@ func VersionCheck(
 	function string,
 	parameter string,
 	value_to_match string,
+	data map[string]interface{},
 ) (bool, error) {
-	res, err := tarballname.Parse(value_to_match)
+
+	info, ok := data["info"].(*basictypes.PackageInfo)
+	if !ok {
+		return false, errors.New("VersionCheck requires data[\"info\"]")
+	}
+
+	p, err := tarballnameparsers.Get(info.TarballFileNameParser)
+	if err != nil {
+		return false, err
+	}
+
+	res, err := p.ParseName(value_to_match)
 	if err != nil {
 		return false, err
 	}
@@ -75,7 +88,7 @@ func init() {
 		value_to_match string,
 		data map[string]interface{},
 	) (bool, error) {
-		return VersionCheck("<", parameter, value_to_match)
+		return VersionCheck("<", parameter, value_to_match, data)
 	}
 	VersionFilterFunctions["version-<="] = func(
 		parameter string,
@@ -83,7 +96,7 @@ func init() {
 		value_to_match string,
 		data map[string]interface{},
 	) (bool, error) {
-		return VersionCheck("<=", parameter, value_to_match)
+		return VersionCheck("<=", parameter, value_to_match, data)
 	}
 	VersionFilterFunctions["version-=="] = func(
 		parameter string,
@@ -91,7 +104,7 @@ func init() {
 		value_to_match string,
 		data map[string]interface{},
 	) (bool, error) {
-		return VersionCheck("==", parameter, value_to_match)
+		return VersionCheck("==", parameter, value_to_match, data)
 	}
 	VersionFilterFunctions["version->="] = func(
 		parameter string,
@@ -99,7 +112,7 @@ func init() {
 		value_to_match string,
 		data map[string]interface{},
 	) (bool, error) {
-		return VersionCheck(">=", parameter, value_to_match)
+		return VersionCheck(">=", parameter, value_to_match, data)
 	}
 	VersionFilterFunctions["version->"] = func(
 		parameter string,
@@ -107,7 +120,7 @@ func init() {
 		value_to_match string,
 		data map[string]interface{},
 	) (bool, error) {
-		return VersionCheck(">", parameter, value_to_match)
+		return VersionCheck(">", parameter, value_to_match, data)
 	}
 	VersionFilterFunctions["version-!="] = func(
 		parameter string,
@@ -115,6 +128,6 @@ func init() {
 		value_to_match string,
 		data map[string]interface{},
 	) (bool, error) {
-		return VersionCheck("!=", parameter, value_to_match)
+		return VersionCheck("!=", parameter, value_to_match, data)
 	}
 }
