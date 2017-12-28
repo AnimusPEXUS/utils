@@ -30,3 +30,23 @@ func (self *ParsedTarballName) InfoText() string {
 
 	return ret
 }
+
+func (self *ParsedTarballName) Render(apply_extension bool) string {
+	name := ""
+	if self.Name != "" {
+		name = self.Name + "-"
+	}
+	status := ""
+	if self.Status.Str != "" {
+		status = "-" + self.Status.Str
+	}
+
+	ext := ""
+	if apply_extension {
+		if self.Extension != "" {
+			ext = self.Extension
+		}
+	}
+
+	return fmt.Sprintf("%s%s%s%s", name, self.Version.Str, status, ext)
+}
