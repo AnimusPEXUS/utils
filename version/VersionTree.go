@@ -58,14 +58,10 @@ func (self *VersionTree) Add(basename string) error {
 	}
 
 	version_list, err := res.Version.ArrUInt()
+
 	if err != nil {
 		return err
 	}
-
-	// version_list := make([]uint, len(res.Version))
-	// copy(version_list, res.Version)
-
-	// version_list := res.VersionStrings()
 
 	path_part := make([]uint, 0)
 	for _, i := range version_list[:len(version_list)-1] {
@@ -158,7 +154,7 @@ func (self *VersionTree) TruncateByVersionDepth(
 	}
 
 	lst := dir.ListDirNoSep()
-	//sort.Sort(directory.FileSlice(lst))
+	// sort.Sort(directory.FileSlice(lst))
 
 	inames := make([]int, 0)
 
@@ -213,6 +209,8 @@ func (self *VersionTree) Basenames(
 					val.([]string),
 					extensions_preferred_order,
 				)
+
+				// fmt.Println(val.([]string), "filtered down to", res)
 
 				if res != "" {
 					bases = append(bases, res)

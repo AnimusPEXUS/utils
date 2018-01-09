@@ -1,8 +1,9 @@
-package htmlwalk
+package sfnetwalk
 
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,154 +17,129 @@ import (
 	"github.com/AnimusPEXUS/utils/cache01"
 	"github.com/AnimusPEXUS/utils/filetools"
 	"github.com/AnimusPEXUS/utils/logger"
-	"github.com/AnimusPEXUS/utils/set"
-	"github.com/antchfx/xquery/html"
+	"github.com/antchfx/htmlquery"
 )
 
-var _ filetools.WalkerI = &HTMLWalk{}
+var _ filetools.WalkerI = &SFNetWalk{}
 
-type HTMLWalk struct {
-	scheme string
-	host   string
-
-	cache *cache01.CacheDir
-
-	log *logger.Logger
+type SFNetWalk struct {
+	project string
+	cache   *cache01.CacheDir
+	log     *logger.Logger
 }
 
-func NewHTMLWalk(
-	scheme string,
-	host string,
+func NewSFNetWalk(
+	project string,
 	cache *cache01.CacheDir,
 	log *logger.Logger,
-) (*HTMLWalk, error) {
-	self := new(HTMLWalk)
-	self.scheme = scheme
-	self.host = host
-
+) (*SFNetWalk, error) {
+	self := new(SFNetWalk)
+	self.project = project
 	self.cache = cache
-
 	self.log = log
 
-	// ret.tree = directory.NewFile(nil, "", true, nil)
 	return self, nil
 }
 
-func (self *HTMLWalk) LogI(txt string) {
+func (self *SFNetWalk) LogI(txt string) {
 	if self.log != nil {
 		self.log.Info(txt)
 	}
 }
 
-func (self *HTMLWalk) LogE(txt string) {
+func (self *SFNetWalk) LogE(txt string) {
 	if self.log != nil {
 		self.log.Error(txt)
 	}
 }
 
-func (self *HTMLWalk) ListDirNotCached(pth string) (
+func (self *SFNetWalk) ListDirNotCached(pth string) (
 	[]os.FileInfo,
 	[]os.FileInfo,
 	error,
 ) {
-
 	dirs := make([]os.FileInfo, 0)
 	files := make([]os.FileInfo, 0)
 
-	pth = path.Clean(pth)
+	url_path := []string{"projects", self.project, "files"}
+	url_path = append(url_path, strings.Split(pth, "/")...)
 
 	u := &url.URL{
-		Scheme: self.scheme,
-		Host:   self.host,
-		Path:   pth,
+		Scheme: "https",
+		Host:   "sourceforge.net",
+		Path:   path.Clean(path.Join(url_path...)),
 	}
 
-	r, err := http.Get(u.String())
+	resp, err := http.Get(u.String())
 	if err != nil {
-		return dirs, files, err
+		return []os.FileInfo{}, []os.FileInfo{}, err
 	}
 
-	if !strings.HasPrefix(strconv.Itoa(r.StatusCode), "2") {
+	if !strings.HasPrefix(strconv.Itoa(resp.StatusCode), "2") {
 		return []os.FileInfo{}, []os.FileInfo{},
-			fmt.Errorf("http code %d", r.StatusCode)
+			fmt.Errorf("http code %d", resp.StatusCode)
 	}
 
 	b := new(bytes.Buffer)
-	io.Copy(b, r.Body)
-	r.Body.Close()
+	io.Copy(b, resp.Body)
+	resp.Body.Close()
 
 	doc, err := htmlquery.Parse(b)
 
-	if err != nil {
-		return dirs, files, err
+	file_list_table_res := htmlquery.Find(doc, `.//table[@id="files_list"]`)
+	if len(file_list_table_res) != 1 {
+		return []os.FileInfo{}, []os.FileInfo{},
+			errors.New("found invalid number of files_list tables")
 	}
 
-	res := htmlquery.Find(doc, ".//a")
+	file_list_table := file_list_table_res[0]
 
-	s := set.NewSetString()
+	file_list_table_tbody_res := htmlquery.Find(file_list_table, "tbody")
+	if len(file_list_table_tbody_res) != 1 {
+		return []os.FileInfo{}, []os.FileInfo{},
+			errors.New("found invalid number of tbody")
+	}
 
-searching:
-	for _, i := range res {
-		for _, j := range i.Attr {
-			if j.Key == "href" {
+	file_list_table_tbody := file_list_table_tbody_res[0]
 
-				// {
-				// 	u, err := url.Parse(j.Val)
-				// 	if err == nil {
-				// 		fmt.Println("is abs?:", j.Val, u.IsAbs())
-				// 	}
-				// }
+	folder_trs := htmlquery.Find(file_list_table_tbody, "tr")
 
-				if u, err := url.Parse(j.Val); err == nil && (u.Host != "" ||
-					u.Scheme != "" ||
-					u.RawQuery != "") {
-					continue searching
-				}
+	for _, i := range folder_trs {
+		cls := ""
 
-				for _, i := range []string{"/", "#"} {
-					if strings.HasPrefix(j.Val, i) {
-						continue searching
-					}
-				}
-
-				{
-					c := path.Clean(j.Val)
-					for _, i := range []string{".", "..", ""} {
-						if c == i {
-							continue searching
-						}
-					}
-				}
-
-				// ue, err := url.PathUnescape(i.Data)
-				ue, err := url.PathUnescape(j.Val)
-				if err != nil {
-					continue searching
-				}
-				s.Add(ue)
-
-				continue searching
+		for _, i := range i.Attr {
+			if i.Key == "class" {
+				cls = i.Val
+				break
 			}
 		}
-	}
 
-	for _, i := range s.ListStrings() {
-		if strings.HasSuffix(i, "/") {
-			t := &FileInfo{name: i, isdir: true}
-			dirs = append(dirs, t)
-		} else {
-			t := &FileInfo{name: i, isdir: false}
-			files = append(files, t)
+		name := ""
+		for _, i := range i.Attr {
+			if i.Key == "title" {
+				name = i.Val
+				break
+			}
 		}
-	}
+		name, err = url.PathUnescape(name)
+		if err != nil {
+			return []os.FileInfo{}, []os.FileInfo{}, err
+		}
 
-	sort.Sort(OsFileInfoSort(dirs))
-	sort.Sort(OsFileInfoSort(files))
+		if strings.Contains(cls, "folder") {
+			dirs = append(dirs, &FileInfo{name: name, isdir: true})
+		} else if strings.Contains(cls, "file") {
+			files = append(files, &FileInfo{name: name, isdir: false})
+		} else {
+
+		}
+
+	}
 
 	return dirs, files, nil
 }
 
-func (self *HTMLWalk) ListDir(pth string) (
+func (self *SFNetWalk) ListDir(pth string) (
 	[]os.FileInfo,
 	[]os.FileInfo,
 	error,
@@ -179,9 +155,9 @@ func (self *HTMLWalk) ListDir(pth string) (
 			fmt.Sprintf(
 				"updating cache %s",
 				(&url.URL{
-					Scheme: self.scheme,
-					Host:   self.host,
-					Path:   pth,
+					Scheme: "https",
+					Host:   "sourceforge.net",
+					Path:   path.Join("projects", self.project, "files", pth),
 				}).String(),
 			),
 		)
@@ -252,7 +228,7 @@ func (self *HTMLWalk) ListDir(pth string) (
 
 }
 
-func (self *HTMLWalk) Walk(
+func (self *SFNetWalk) Walk(
 	pth string,
 	target func(
 		dir string,
@@ -282,7 +258,7 @@ func (self *HTMLWalk) Walk(
 	return nil
 }
 
-func (self *HTMLWalk) Tree(pth string) (map[string]os.FileInfo, error) {
+func (self *SFNetWalk) Tree(pth string) (map[string]os.FileInfo, error) {
 
 	ret := make(map[string]os.FileInfo)
 

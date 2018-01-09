@@ -47,8 +47,8 @@ func (self *ParsedVersionOrStatus) ArrUInt() ([]uint, error) {
 		return []uint{}, err
 	}
 	ret := make([]uint, len(res))
-	for _, i := range res {
-		ret = append(ret, uint(i))
+	for ii, i := range res {
+		ret[ii] = uint(i)
 	}
 	return ret, nil
 }
