@@ -303,7 +303,7 @@ func (self *File) GetByPath(
 
 	}
 
-	return nil
+	return ret
 
 }
 
