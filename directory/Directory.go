@@ -96,13 +96,13 @@ func (self *File) Path() ([]*File, error) {
 	p := self
 
 	for {
+		if p.parent == nil {
+			break
+		}
+
 		ret = append([]*File{p}, ret...)
 
 		p = p.parent
-
-		if p == nil {
-			break
-		}
 	}
 
 	return ret, nil
@@ -284,7 +284,10 @@ func (self *File) Get(name string, not_found_is_error bool) (*File, error) {
 	}
 
 	if not_found_is_error {
-		return nil, errors.New("not found")
+		err := errors.New("not found")
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return nil, nil
@@ -387,7 +390,7 @@ func (self *File) GetByPath(
 		} else {
 			if !get_res.IsDir() {
 				return nil, errors.New(
-					"path to last element exists, but one of elements isn't dir",
+					"element of path exists, but isn't a dir",
 				)
 			}
 			d_track = get_res
@@ -434,17 +437,17 @@ func (self *File) FindFile(pattern string) ([]string, error) {
 	err := self.Walk(
 		func(pth, dirs, files []*File) error {
 			for _, i := range files {
-				path_str, err := pth[len(pth)-1].PathString()
-				if err != nil {
-					return err
-				}
+
 				i_n := i.Name()
 				m, err := path.Match(pattern, i_n)
 				if err != nil {
 					return err
 				}
 				if m {
-					path_str = path_str + "/" + i_n
+					path_str, err := i.PathString()
+					if err != nil {
+						return err
+					}
 					ret = append(ret, path_str)
 				}
 			}
@@ -460,17 +463,26 @@ func (self *File) FindFile(pattern string) ([]string, error) {
 func (self *File) TreeString() (string, error) {
 	ret := ""
 	err := self.Walk(
-		func(path, dirs, files []*File) error {
-			p, err := path[len(path)-1].PathString()
-			if err != nil {
-				return err
+		func(pth, dirs, files []*File) error {
+			indent := ""
+			for _, _ = range pth {
+				indent += " "
 			}
-			ret += fmt.Sprintln("path", p)
+
+			if len(pth) > 0 {
+				p, err := pth[len(pth)-1].PathString()
+				if err != nil {
+					return err
+				}
+				ret += fmt.Sprintf("%spath '%s'\n", indent, p)
+			} else {
+				ret += fmt.Sprintf("%sroot\n", indent)
+			}
 			for ii, i := range dirs {
-				ret += fmt.Sprintln("    <dir>", ii, i.Name())
+				ret += fmt.Sprintf("%s <dir> %d '%s'\n", indent, ii, i.Name())
 			}
 			for ii, i := range files {
-				ret += fmt.Sprintln("    ", ii, i.Name())
+				ret += fmt.Sprintf("%s <fle> %d '%s'\n", indent, ii, i.Name())
 			}
 			return nil
 		},
