@@ -3,7 +3,7 @@ package filepath
 import (
 	"strings"
 
-	augstrings "github.com/AnimusPEXUS/strings"
+	augstrings "github.com/AnimusPEXUS/utils/strings"
 )
 
 var (

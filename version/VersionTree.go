@@ -76,7 +76,10 @@ func (self *VersionTree) Add(basename string) error {
 		bases := make([]string, 0)
 		for _, ii := range path_part {
 			ii_str := strconv.Itoa(int(ii))
-			ii_f := directory.Get(ii_str)
+			ii_f, err := directory.Get(ii_str, false)
+			if err != nil {
+				return err
+			}
 			if ii_f != nil {
 				if !ii_f.IsDir() {
 					ii_f_v := ii_f.GetValue()
@@ -88,11 +91,20 @@ func (self *VersionTree) Add(basename string) error {
 					}
 
 					//directory.Delete(ii_str)
-					directory.MkDir(ii_str, nil)
+					_, err = directory.MkDir(ii_str, nil)
+					if err != nil {
+						return err
+					}
 				}
-				directory = directory.Get(ii_str)
+				directory, err = directory.Get(ii_str, false)
+				if err != nil {
+					return err
+				}
 			} else {
-				directory = directory.MkDir(ii_str, nil)
+				directory, err = directory.MkDir(ii_str, nil)
+				if err != nil {
+					return err
+				}
 			}
 		}
 		for _, i := range bases {
@@ -110,13 +122,23 @@ func (self *VersionTree) RestoreBase(
 	directory *directory.File,
 	value []string,
 	as_name uint,
-) {
+) error {
 
 	as_name_s := strconv.Itoa(int(as_name))
-	if !directory.Have(as_name_s) {
-		directory.MkFile(as_name_s, value)
+	h, err := directory.Have(as_name_s)
+	if err != nil {
+		return err
+	}
+	if !h {
+		_, err = directory.MkFile(as_name_s, value)
+		if err != nil {
+			return err
+		}
 	} else {
-		d_as_name := directory.Get(as_name_s)
+		d_as_name, err := directory.Get(as_name_s, true)
+		if err != nil {
+			return err
+		}
 
 		if !d_as_name.IsDir() {
 			fv := d_as_name.GetValue()
@@ -138,22 +160,29 @@ func (self *VersionTree) RestoreBase(
 			d_as_name.SetValue(s.ListStrings())
 
 		} else {
-			directory = directory.Get(as_name_s)
+			directory, err = directory.Get(as_name_s, true)
+			if err != nil {
+				return err
+			}
 			self.RestoreBase(directory, value, 0)
 		}
 	}
+	return nil
 }
 
 func (self *VersionTree) TruncateByVersionDepth(
 	dir *directory.File,
 	depth int,
-) {
+) error {
 
 	if dir == nil {
 		dir = self.d
 	}
 
-	lst := dir.ListDirNoSep()
+	lst, err := dir.ListDirNoSep()
+	if err != nil {
+		return err
+	}
 	// sort.Sort(directory.FileSlice(lst))
 
 	inames := make([]int, 0)
@@ -187,23 +216,32 @@ func (self *VersionTree) TruncateByVersionDepth(
 	}
 
 	for _, i := range inames_to_work_with {
-		dg := dir.Get(strconv.Itoa(i))
+		dg, err := dir.Get(strconv.Itoa(i), true)
+		if err != nil {
+			return err
+		}
 		if dg.IsDir() {
 			self.TruncateByVersionDepth(dg, depth)
 		}
 	}
+	return nil
 }
 
 func (self *VersionTree) Basenames(
 	extensions_preferred_order []string,
-) []string {
+) ([]string, error) {
 
 	bases := make([]string, 0)
 
-	self.d.Walk(
+	err := self.d.Walk(
 		func(path []*directory.File, dirs, files []*directory.File) error {
 			for _, i := range files {
-				val := path[len(path)-1].Get(i.Name()).GetValue()
+				val_t := path[len(path)-1]
+				val_t2, err := val_t.Get(i.Name(), true)
+				if err != nil {
+					return err
+				}
+				val := val_t2.GetValue()
 
 				res := filepath.SelectByPreferredExtension(
 					val.([]string),
@@ -219,7 +257,10 @@ func (self *VersionTree) Basenames(
 			return nil
 		},
 	)
+	if err != nil {
+		return []string{}, err
+	}
 
-	return bases
+	return bases, nil
 
 }
