@@ -248,14 +248,14 @@ func (self *Logger) _WriteOutput(
 	b := []byte(txt)
 
 	ww.out.(io.Writer).Write(b)
-	switch ww.out.(type) {
-	case interface {
-		Sync() error
-	}:
-		ww.out.(interface {
-			Sync() error
-		}).Sync()
-	}
+	// switch ww.out.(type) {
+	// case interface {
+	// 	Sync() error
+	// }:
+	// 	ww.out.(interface {
+	// 		Sync() error
+	// 	}).Sync()
+	// }
 
 }
 
