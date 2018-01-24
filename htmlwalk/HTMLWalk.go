@@ -29,6 +29,8 @@ type HTMLWalk struct {
 	cache *cache01.CacheDir
 
 	log *logger.Logger
+
+	exclude_paths []string
 }
 
 func NewHTMLWalk(
@@ -36,6 +38,7 @@ func NewHTMLWalk(
 	host string,
 	cache *cache01.CacheDir,
 	log *logger.Logger,
+	exclude_paths []string,
 ) (*HTMLWalk, error) {
 	self := new(HTMLWalk)
 	self.scheme = scheme
@@ -45,7 +48,7 @@ func NewHTMLWalk(
 
 	self.log = log
 
-	// ret.tree = directory.NewFile(nil, "", true, nil)
+	self.exclude_paths = exclude_paths
 	return self, nil
 }
 
@@ -273,9 +276,18 @@ func (self *HTMLWalk) Walk(
 
 	for _, i := range dirs {
 		j := path.Join(pth, i.Name())
-		err = self.Walk(j, target)
-		if err != nil {
-			return err
+		found := false
+		for _, k := range self.exclude_paths {
+			if k == j {
+				found = true
+				break
+			}
+		}
+		if !found {
+			err = self.Walk(j, target)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
