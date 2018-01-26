@@ -14,13 +14,13 @@ type (
 	}
 
 	AdditionalInfo struct {
-		opts_and_args     []string
-		available_options GetOptCheckList
-		depth_level       []string
-		subnode           *AppCmdNode
-		rootnode          *AppCmdNode
-		arg0              string
-		pass_data         *interface{}
+		OptsAndArgs      []string
+		AvailableOptions GetOptCheckList
+		DepthLevel       []string
+		Subnode          *AppCmdNode
+		Rootnode         *AppCmdNode
+		Arg0             string
+		PassData         *interface{}
 	}
 
 	AppCmdNode struct {
@@ -110,11 +110,13 @@ func CheckAppCmdNode(in *AppCmdNode, depth []string) {
 	}
 }
 
-// NOTE: this function does not returns: os.Exit is called before the return
+// NOTE: this function does not returns: os.Exit is called before the return.
+//       use RunCmd to avoid os.Exit
 func RunApp(
 	rootnode *AppCmdNode,
 	pass_data *interface{},
 ) {
+
 	res := RunCmd(os.Args[0], os.Args[1:], rootnode, pass_data)
 
 	if res == nil {
@@ -224,13 +226,13 @@ func RunCmd(
 				ret = subtree.Callable(
 					getopt_result,
 					&AdditionalInfo{
-						opts_and_args:     opts_and_args,
-						available_options: subtree.AvailableOptions,
-						depth_level:       depth_level,
-						subnode:           subtree,
-						rootnode:          rootnode,
-						arg0:              arg0,
-						pass_data:         pass_data,
+						OptsAndArgs:      opts_and_args,
+						AvailableOptions: subtree.AvailableOptions,
+						DepthLevel:       depth_level,
+						Subnode:          subtree,
+						Rootnode:         rootnode,
+						Arg0:             arg0,
+						PassData:         pass_data,
 					},
 				)
 
