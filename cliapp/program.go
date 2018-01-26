@@ -188,7 +188,7 @@ func RunCmd(
 			help_option := getopt_result.GetLastNamedRetOptItem("--help")
 			if help_option != nil {
 				show_help = true
-				if help_option.HasValue {
+				if help_option.HaveValue {
 					ret = &AppResult{
 						1,
 						"options error: option --help does not assume additional value",

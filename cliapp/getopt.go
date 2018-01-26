@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// result after arguments processd
 type GetOptResult struct {
 	NodeInfo *AppCmdNode
 	Args     []string
@@ -17,7 +18,7 @@ func (self *GetOptResult) String() string {
 
 	for _, i := range self.Opts {
 		ret += fmt.Sprintf("%s", i.Name)
-		if i.HasValue {
+		if i.HaveValue {
 			ret += fmt.Sprintf("=%s", i.Value)
 		}
 		ret += "\n"
@@ -30,6 +31,8 @@ func (self *GetOptResult) String() string {
 	return ret
 }
 
+// If arguments contained many options with name 'name', then return only last
+// of them
 func (self *GetOptResult) GetLastNamedRetOptItem(name string) *RetOptItem {
 	var ret *RetOptItem = nil
 	for _, i := range self.Opts {
@@ -40,6 +43,7 @@ func (self *GetOptResult) GetLastNamedRetOptItem(name string) *RetOptItem {
 	return ret
 }
 
+// return all options with name 'name'
 func (self *GetOptResult) GetAllNamedRetOptItems(name string) []RetOptItem {
 	var ret []RetOptItem
 	for _, i := range self.Opts {
@@ -50,6 +54,7 @@ func (self *GetOptResult) GetAllNamedRetOptItems(name string) []RetOptItem {
 	return ret
 }
 
+// check result accordingly with AvailableOptions passed to
 func (self *GetOptResult) CheckOptResult() []error {
 	ret := make([]error, 0)
 	for _, i := range self.NodeInfo.AvailableOptions {
@@ -65,9 +70,9 @@ func (self *GetOptResult) CheckOptResult() []error {
 				self.Opts = append(
 					self.Opts,
 					&RetOptItem{
-						Name:     i.Name,
-						HasValue: true,
-						Value:    i.Default,
+						Name:      i.Name,
+						HaveValue: true,
+						Value:     i.Default,
 					},
 				)
 			}
@@ -75,9 +80,9 @@ func (self *GetOptResult) CheckOptResult() []error {
 
 		if i.MustHaveValue {
 			item := self.GetLastNamedRetOptItem(i.Name)
-			if item != nil && !item.HasValue {
+			if item != nil && !item.HaveValue {
 				if i.HaveDefault {
-					item.HasValue = true
+					item.HaveValue = true
 					item.Value = i.Default
 				} else {
 					ret = append(
@@ -120,6 +125,7 @@ func (self *GetOptResult) CheckOptResult() []error {
 	return ret
 }
 
+// check if option with name 'name' has been supplied
 func (self *GetOptResult) DoesHaveNamedRetOptItem(name string) bool {
 	for _, i := range self.Opts {
 		if i.Name == name {
@@ -129,17 +135,18 @@ func (self *GetOptResult) DoesHaveNamedRetOptItem(name string) bool {
 	return false
 }
 
+// check if option with name 'name' has been supplied and it have some value
 func (self *GetOptResult) DoesNamedRetOptItemHaveValue(name string) bool {
 	if self.DoesHaveNamedRetOptItem(name) {
-		return self.GetLastNamedRetOptItem(name).HasValue
+		return self.GetLastNamedRetOptItem(name).HaveValue
 	}
 	return false
 }
 
 type RetOptItem struct {
-	Name     string
-	HasValue bool
-	Value    string
+	Name      string
+	HaveValue bool
+	Value     string
 }
 
 // NOTE: spaces, around option names, theyr values and arguments are not
@@ -192,11 +199,11 @@ func GetOpt(args []string) *GetOptResult {
 
 						if eq_pos != -1 {
 							_t.Name = args[i][:eq_pos]
-							_t.HasValue = true
+							_t.HaveValue = true
 							_t.Value = args[i][eq_pos+1:]
 						} else {
 							_t.Name = args[i]
-							_t.HasValue = false
+							_t.HaveValue = false
 							_t.Value = ""
 						}
 
@@ -226,7 +233,7 @@ type GetOptCheckListItem struct {
 	Description   string // this text will be printed beside option on --help parameter
 }
 
-func (self GetOptCheckListItem) HelpString() string {
+func (self *GetOptCheckListItem) HelpString() string {
 	ret := ""
 
 	if !self.IsRequired {
