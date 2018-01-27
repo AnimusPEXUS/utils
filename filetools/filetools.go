@@ -89,9 +89,10 @@ func ListDir(pth string) ([]os.FileInfo, []os.FileInfo, error) {
 	return dirs, files, nil
 }
 
-// TODO: no_symlink_delve option
+// TODO: no_symlink_delve option or somethin similar. symleanks should be dealth with
 func Walk(
 	pth string,
+	follow_symlinks bool,
 	target func(
 		dir string,
 		dirs []os.FileInfo,
@@ -134,6 +135,16 @@ func Walk(
 				return err
 			}
 
+			if !follow_symlinks {
+				dirs2 := make([]os.FileInfo, 0)
+				for _, i := range dirs {
+					if !Is(i.Mode()).Symlink() {
+						dirs2 = append(dirs2, i)
+					}
+				}
+				dirs = dirs2
+			}
+
 			for _, j := range dirs {
 				all_dirs = append(all_dirs, path.Join(all_dirs_i, j.Name()))
 			}
@@ -152,7 +163,6 @@ func Walk(
 	}
 
 	return nil
-
 }
 
 func CopyTree(
@@ -222,6 +232,7 @@ func CopyTree(
 
 	err = Walk(
 		src_path,
+		false,
 		func(
 			dir string,
 			dirs []os.FileInfo,
@@ -294,36 +305,62 @@ func CopyTree(
 
 func CopyWithInfo(src, dst string, log logger.LoggerI) error {
 
-	sf, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer sf.Close()
-
-	df, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer df.Close()
-
-	_, err = io.Copy(df, sf)
+	src_stat, err := os.Lstat(src)
 	if err != nil {
 		return err
 	}
 
-	sfs, err := os.Stat(src)
-	if err != nil {
-		return err
-	}
+	if Is(src_stat.Mode()).Symlink() {
 
-	err = os.Chmod(dst, sfs.Mode())
-	if err != nil {
-		return err
-	}
+		link_value, err := os.Readlink(src)
+		if err != nil {
+			return err
+		}
 
-	err = os.Chtimes(dst, sfs.ModTime(), sfs.ModTime())
-	if err != nil {
-		return err
+		err = os.Remove(dst)
+		if err != nil {
+			return err
+		}
+
+		err = os.Symlink(link_value, dst)
+		if err != nil {
+			return err
+		}
+
+	} else {
+
+		sf, err := os.Open(src)
+		if err != nil {
+			return err
+		}
+		defer sf.Close()
+
+		df, err := os.Create(dst)
+		if err != nil {
+			return err
+		}
+		defer df.Close()
+
+		_, err = io.Copy(df, sf)
+		if err != nil {
+			return err
+		}
+
+		sfs, err := os.Stat(src)
+		if err != nil {
+			return err
+		}
+
+		err = os.Chmod(dst, sfs.Mode())
+		if err != nil {
+			return err
+		}
+
+		err = os.Chtimes(dst, sfs.ModTime(), sfs.ModTime())
+		if err != nil {
+			return err
+		}
+
 	}
 
 	return nil
