@@ -92,7 +92,6 @@ func ListDir(pth string) ([]os.FileInfo, []os.FileInfo, error) {
 // TODO: no_symlink_delve option or somethin similar. symleanks should be dealth with
 func Walk(
 	pth string,
-	follow_symlinks bool,
 	target func(
 		dir string,
 		dirs []os.FileInfo,
@@ -133,16 +132,6 @@ func Walk(
 			dirs, files, err := ListDir(all_dirs_i)
 			if err != nil {
 				return err
-			}
-
-			if !follow_symlinks {
-				dirs2 := make([]os.FileInfo, 0)
-				for _, i := range dirs {
-					if !Is(i.Mode()).Symlink() {
-						dirs2 = append(dirs2, i)
-					}
-				}
-				dirs = dirs2
 			}
 
 			for _, j := range dirs {
@@ -232,7 +221,6 @@ func CopyTree(
 
 	err = Walk(
 		src_path,
-		false,
 		func(
 			dir string,
 			dirs []os.FileInfo,
