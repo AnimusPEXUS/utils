@@ -305,10 +305,7 @@ func CopyWithInfo(src, dst string, log logger.LoggerI) error {
 			return err
 		}
 
-		err = os.Remove(dst)
-		if err != nil {
-			return err
-		}
+		os.Remove(dst)
 
 		err = os.Symlink(link_value, dst)
 		if err != nil {
