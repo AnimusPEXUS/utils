@@ -1,4 +1,6 @@
-package cycleclassification
+package softwarereleaselifecycle
+
+// https://en.wikipedia.org/wiki/Software_release_life_cycle
 
 type DevelopmentStatus uint
 
@@ -16,7 +18,7 @@ const (
 func (self DevelopmentStatus) String() string {
 	switch self {
 	default:
-		return "unknown"
+		panic("invalid value")
 	case Development:
 		return "development"
 	case PreAlpha:
@@ -26,11 +28,11 @@ func (self DevelopmentStatus) String() string {
 	case Beta:
 		return "beta"
 	case RC:
-		return "RC"
+		return "RC" // Release candidate
 	case RTM:
-		return "RTM"
+		return "RTM" // Release to manufacturing
 	case GA:
-		return "GA"
+		return "GA" // General availability
 	case Gold:
 		return "Gold"
 	}
