@@ -1,5 +1,7 @@
 package versionfilterfunctions
 
+// TODO: move this file to aipsetup
+
 import (
 	"errors"
 	"strconv"
@@ -20,7 +22,23 @@ func VersionCheck(
 	data map[string]interface{},
 ) (bool, error) {
 
-	info, ok := data["info"].(*basictypes.PackageInfo)
+	// vtm_i_array, ok := data["version[]int"].([]int)
+	// if !ok {
+	// 	return false, errors.New("VersionCheck requires data[\"version[]int\"]")
+	// }
+	//
+	// ret := false
+	//
+	// param_i_array := make([]int, 0)
+	// for _, i := range strings.Split(parameter, ".") {
+	// 	i_i, err := strconv.Atoi(i)
+	// 	if err != nil {
+	// 		return false, err
+	// 	}
+	// 	param_i_array = append(param_i_array, i_i)
+	// }
+
+	info, ok := data["pkg_info"].(*basictypes.PackageInfo)
 	if !ok {
 		return false, errors.New("VersionCheck requires data[\"info\"]")
 	}
