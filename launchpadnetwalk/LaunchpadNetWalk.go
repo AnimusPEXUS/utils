@@ -116,6 +116,7 @@ func (self *LaunchpadNetWalk) _GetReleaseFiles(title string) ([][2]string, error
 
 		found := false
 		for _, i := range rels.Entries {
+
 			if i.Title == title {
 				uri = i.FileCollectionLink
 				found = true
@@ -180,6 +181,10 @@ func (self *LaunchpadNetWalk) ListDir(pth string) (
 	[]os.FileInfo,
 	error,
 ) {
+	// TODO: fix required: this is hack to only make it work. but logical problem isn't
+	//       solved. "path science" policy shold be developed for all Walk functions
+	//       of aipsetup and utils.
+	pth = strings.Trim(pth, "/")
 
 	dirs := make([]os.FileInfo, 0)
 	files := make([]os.FileInfo, 0)
