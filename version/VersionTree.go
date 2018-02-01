@@ -3,6 +3,7 @@ package version
 import (
 	"errors"
 	"path"
+	"regexp"
 	"sort"
 	"strconv"
 
@@ -15,17 +16,17 @@ import (
 type VersionTree struct {
 	d *directory.File
 
-	tarball_name        string
+	tarball_name_regexp string
 	tarball_name_parser types.TarballNameParserI
 }
 
 func NewVersionTree(
-	tarball_name string,
+	tarball_name_regexp string,
 	tarball_name_parser types.TarballNameParserI,
 ) (*VersionTree, error) {
 	ret := new(VersionTree)
 
-	ret.tarball_name = tarball_name
+	ret.tarball_name_regexp = tarball_name_regexp
 	ret.tarball_name_parser = tarball_name_parser
 
 	// if t, err := tarballnameparsers.Get(tarball_name_parser); err != nil {
@@ -53,12 +54,15 @@ func (self *VersionTree) Add(basename string) error {
 		return err
 	}
 
-	if res.Name != self.tarball_name {
-		return errors.New("tarball name dismatch")
+	if m, err := regexp.MatchString(self.tarball_name_regexp, res.Name); err != nil {
+		return err
+	} else {
+		if !m {
+			return errors.New("tarball name dismatch")
+		}
 	}
 
 	version_list, err := res.Version.ArrUInt()
-
 	if err != nil {
 		return err
 	}
@@ -224,6 +228,7 @@ func (self *VersionTree) TruncateByVersionDepth(
 			self.TruncateByVersionDepth(dg, depth)
 		}
 	}
+
 	return nil
 }
 
@@ -247,8 +252,6 @@ func (self *VersionTree) Basenames(
 					val.([]string),
 					extensions_preferred_order,
 				)
-
-				// fmt.Println(val.([]string), "filtered down to", res)
 
 				if res != "" {
 					bases = append(bases, res)

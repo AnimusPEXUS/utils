@@ -40,8 +40,8 @@ func Compare(one, two []int) int {
 }
 
 func SortByVersion(names []string, parser types.TarballNameParserI) error {
-	for i := 0; i != len(names)-1; i++ {
-		for j := i + 1; j != len(names); j++ {
+	for i := 0; i < len(names)-1; i++ {
+		for j := i + 1; j < len(names); j++ {
 			pi, err := parser.Parse(names[i])
 			if err != nil {
 				return err
