@@ -287,3 +287,25 @@ func (self *SFNetWalk) Tree(pth string) (map[string]os.FileInfo, error) {
 
 	return ret, nil
 }
+
+func (self *SFNetWalk) GetDownloadingURIForFile(name string) (string, error) {
+	name = path.Base(name)
+
+	tree, err := self.Tree("/")
+	if err != nil {
+		return "", err
+	}
+
+	for k, _ := range tree {
+		if path.Base(k) == name {
+			u := &url.URL{
+				Scheme: "https",
+				Host:   "sourceforge.net",
+				Path:   path.Join("projects", self.project, "files", k, "download"),
+			}
+			return u.String(), nil
+		}
+	}
+
+	return "", errors.New("not found")
+}
