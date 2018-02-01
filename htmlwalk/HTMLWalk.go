@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -278,7 +279,11 @@ func (self *HTMLWalk) Walk(
 		j := path.Join(pth, i.Name())
 		found := false
 		for _, k := range self.exclude_paths {
-			if k == j {
+			m, err := regexp.MatchString(k, j)
+			if err != nil {
+				return err
+			}
+			if m {
 				found = true
 				break
 			}
