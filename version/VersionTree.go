@@ -179,6 +179,10 @@ func (self *VersionTree) TruncateByVersionDepth(
 	depth int,
 ) error {
 
+	if depth < 0 {
+		return nil
+	}
+
 	if dir == nil {
 		dir = self.d
 	}

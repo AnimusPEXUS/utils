@@ -26,4 +26,8 @@ var Index = map[string](func() types.TarballNameParserI){
 	"openssh": func() types.TarballNameParserI {
 		return new(TarballNameParser_OpenSSH)
 	},
+
+	"slang": func() types.TarballNameParserI {
+		return new(TarballNameParser_Slang)
+	},
 }
