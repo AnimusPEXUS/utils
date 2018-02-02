@@ -239,9 +239,14 @@ func (self *VersionTree) Basenames(
 	bases := make([]string, 0)
 
 	err := self.d.Walk(
-		func(path []*directory.File, dirs, files []*directory.File) error {
+		func(path, dirs, files []*directory.File) error {
+			val_t := self.d.GetRoot()
+
+			if len(path) != 0 {
+				val_t = path[len(path)-1]
+			}
+
 			for _, i := range files {
-				val_t := path[len(path)-1]
 				val_t2, err := val_t.Get(i.Name(), true)
 				if err != nil {
 					return err
