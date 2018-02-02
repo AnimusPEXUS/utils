@@ -1,10 +1,10 @@
-package versionstabilityclassifiers
+package tarballstabilityclassification
 
 import (
 	"errors"
 
 	"github.com/AnimusPEXUS/utils/tarballname"
-	"github.com/AnimusPEXUS/utils/tarballstabilityclassification"
+	"github.com/AnimusPEXUS/utils/tarballstabilityclassification/types"
 )
 
 func init() {
@@ -15,29 +15,29 @@ type ClassifierGnome struct {
 }
 
 func (self *ClassifierGnome) Check(parsed *tarballname.ParsedTarballName) (
-	tarballstabilityclassification.StabilityClassification,
+	types.StabilityClassification,
 	error,
 ) {
 
 	if parsed.Status.Str != "" {
-		return tarballstabilityclassification.Development, nil
+		return types.Development, nil
 	}
 
 	version, err := parsed.Version.ArrInt()
 	if err != nil {
-		return tarballstabilityclassification.Development, err
+		return types.Development, err
 	}
 
 	if len(version) < 2 {
-		return tarballstabilityclassification.Development,
+		return types.Development,
 			errors.New("version numbers array too short")
 	}
 
 	if version[1]%2 != 0 {
-		return tarballstabilityclassification.Development, nil
+		return types.Development, nil
 	}
 
-	return tarballstabilityclassification.Release, nil
+	return types.Release, nil
 }
 
 func (self *ClassifierGnome) IsStable(parsed *tarballname.ParsedTarballName) (bool, error) {
@@ -45,5 +45,5 @@ func (self *ClassifierGnome) IsStable(parsed *tarballname.ParsedTarballName) (bo
 	if err != nil {
 		return false, err
 	}
-	return tarballstabilityclassification.IsStable(cr), nil
+	return types.IsStable(cr), nil
 }

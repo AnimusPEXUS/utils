@@ -1,8 +1,8 @@
-package versionstabilityclassifiers
+package tarballstabilityclassification
 
 import (
 	"github.com/AnimusPEXUS/utils/tarballname"
-	"github.com/AnimusPEXUS/utils/tarballstabilityclassification"
+	"github.com/AnimusPEXUS/utils/tarballstabilityclassification/types"
 )
 
 func init() {
@@ -13,32 +13,32 @@ type ClassifierGCC struct {
 }
 
 func (self *ClassifierGCC) Check(parsed *tarballname.ParsedTarballName) (
-	tarballstabilityclassification.StabilityClassification,
+	types.StabilityClassification,
 	error,
 ) {
 
 	if parsed.Status.Str != "" {
-		return tarballstabilityclassification.Development, nil
+		return types.Development, nil
 	}
 
 	version, err := parsed.Version.ArrInt()
 	if err != nil {
-		return tarballstabilityclassification.Development, err
+		return types.Development, err
 	}
 
 	if version[0] < 5 {
-		return tarballstabilityclassification.Release, nil
+		return types.Release, nil
 	}
 
 	if version[1] == 0 {
 		if version[2] == 0 {
-			return tarballstabilityclassification.Alpha, nil
+			return types.Alpha, nil
 		} else {
-			return tarballstabilityclassification.Beta, nil
+			return types.Beta, nil
 		}
 	}
 
-	return tarballstabilityclassification.Release, nil
+	return types.Release, nil
 }
 
 func (self *ClassifierGCC) IsStable(parsed *tarballname.ParsedTarballName) (bool, error) {
@@ -46,5 +46,5 @@ func (self *ClassifierGCC) IsStable(parsed *tarballname.ParsedTarballName) (bool
 	if err != nil {
 		return false, err
 	}
-	return tarballstabilityclassification.IsStable(cr), nil
+	return types.IsStable(cr), nil
 }

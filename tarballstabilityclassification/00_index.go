@@ -1,9 +1,9 @@
-package versionstabilityclassifiers
+package tarballstabilityclassification
 
 import (
 	"errors"
 
-	"github.com/AnimusPEXUS/utils/version/versionstabilityclassifiers/types"
+	"github.com/AnimusPEXUS/utils/tarballstabilityclassification/types"
 )
 
 func Get(name string) (types.VersionStabilityClassifierI, error) {

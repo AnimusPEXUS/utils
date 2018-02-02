@@ -1,4 +1,4 @@
-package tarballstabilityclassification
+package types
 
 // https://en.wikipedia.org/wiki/Software_release_life_cycle
 

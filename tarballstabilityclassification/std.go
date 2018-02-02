@@ -1,8 +1,8 @@
-package versionstabilityclassifiers
+package tarballstabilityclassification
 
 import (
 	"github.com/AnimusPEXUS/utils/tarballname"
-	"github.com/AnimusPEXUS/utils/tarballstabilityclassification"
+	"github.com/AnimusPEXUS/utils/tarballstabilityclassification/types"
 )
 
 func init() {
@@ -13,15 +13,15 @@ type ClassifierStd struct {
 }
 
 func (self *ClassifierStd) Check(parsed *tarballname.ParsedTarballName) (
-	tarballstabilityclassification.StabilityClassification,
+	types.StabilityClassification,
 	error,
 ) {
 
 	if parsed.Status.Str != "" {
-		return tarballstabilityclassification.Development, nil
+		return types.Development, nil
 	}
 
-	return tarballstabilityclassification.Release, nil
+	return types.Release, nil
 }
 
 func (self *ClassifierStd) IsStable(parsed *tarballname.ParsedTarballName) (bool, error) {
@@ -29,5 +29,5 @@ func (self *ClassifierStd) IsStable(parsed *tarballname.ParsedTarballName) (bool
 	if err != nil {
 		return false, err
 	}
-	return tarballstabilityclassification.IsStable(cr), nil
+	return types.IsStable(cr), nil
 }

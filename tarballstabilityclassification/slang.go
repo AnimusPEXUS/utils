@@ -1,8 +1,8 @@
-package versionstabilityclassifiers
+package tarballstabilityclassification
 
 import (
 	"github.com/AnimusPEXUS/utils/tarballname"
-	"github.com/AnimusPEXUS/utils/tarballstabilityclassification"
+	"github.com/AnimusPEXUS/utils/tarballstabilityclassification/types"
 )
 
 func init() {
@@ -13,11 +13,11 @@ type ClassifierSlang struct {
 }
 
 func (self *ClassifierSlang) Check(parsed *tarballname.ParsedTarballName) (
-	tarballstabilityclassification.StabilityClassification,
+	types.StabilityClassification,
 	error,
 ) {
 
-	return tarballstabilityclassification.Release, nil
+	return types.Release, nil
 }
 
 func (self *ClassifierSlang) IsStable(parsed *tarballname.ParsedTarballName) (bool, error) {
@@ -25,5 +25,5 @@ func (self *ClassifierSlang) IsStable(parsed *tarballname.ParsedTarballName) (bo
 	if err != nil {
 		return false, err
 	}
-	return tarballstabilityclassification.IsStable(cr), nil
+	return types.IsStable(cr), nil
 }
