@@ -411,9 +411,7 @@ func DefaultVersionFinder(
 
 func defaultVersionSplitterSub0(parsed_version *ParsedVersion) {
 
-	parsed_version.Arr =
-		RemoveItemsList(parsed_version.DirtyArr, ALL_DELIMITERS)
-
+	parsed_version.Arr = RemoveItemsList(parsed_version.DirtyArr, ALL_DELIMITERS)
 	parsed_version.Str = strings.Join(parsed_version.Arr, ".")
 	parsed_version.DirtyStr = strings.Join(parsed_version.DirtyArr, "")
 
@@ -432,16 +430,14 @@ func InfoZipVersionSplitter(
 	name_sliced SlicedName,
 	most_possible_version Slice,
 ) *ParsedVersion {
-	var (
-		ret *ParsedVersion
-	)
 
-	ret = new(ParsedVersion)
+	ret := new(ParsedVersion)
 
-	ret.DirtyArr = append(
-		ret.DirtyArr[:0],
-		strings.Split(name_sliced[1], "")...,
-	)
+	name_sliced1 := name_sliced[1]
+
+	splitted_version := []string{name_sliced1[:1], name_sliced1[1:]}
+
+	ret.DirtyArr = append(ret.DirtyArr, splitted_version...)
 
 	defaultVersionSplitterSub0(ret)
 
