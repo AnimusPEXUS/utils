@@ -10,24 +10,14 @@ func Get(name string) (types.TarballNameParserI, error) {
 	if t, ok := Index[name]; !ok {
 		return nil, errors.New("name parser not found")
 	} else {
-		return t(), nil
+		return t, nil
 	}
 }
 
-var Index = map[string](func() types.TarballNameParserI){
-	"std": func() types.TarballNameParserI {
-		return new(TarballNameParser_Std)
-	},
-
-	"infozip": func() types.TarballNameParserI {
-		return new(TarballNameParser_InfoZip)
-	},
-
-	"openssh": func() types.TarballNameParserI {
-		return new(TarballNameParser_OpenSSH)
-	},
-
-	"slang": func() types.TarballNameParserI {
-		return new(TarballNameParser_Slang)
-	},
+var Index = map[string]types.TarballNameParserI{
+	"std":     &TarballNameParser_Std{},
+	"infozip": &TarballNameParser_InfoZip{},
+	"openssh": &TarballNameParser_OpenSSH{},
+	"openssl": &TarballNameParser_OpenSSL{},
+	"slang":   &TarballNameParser_Slang{},
 }
