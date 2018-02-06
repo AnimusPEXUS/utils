@@ -5,11 +5,12 @@ import (
 )
 
 type ParsedTarballName struct {
-	Basename  string
-	Name      string
-	Version   ParsedVersion
-	Status    ParsedStatus
-	Extension string
+	Basename           string
+	Name               string
+	Version            ParsedVersion
+	Status             ParsedStatus
+	Extension          string
+	OriginalInputValue string
 }
 
 func (self *ParsedTarballName) InfoText() string {

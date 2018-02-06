@@ -503,6 +503,8 @@ func ParseEx(
 
 	ret = new(ParsedTarballName)
 
+	ret.OriginalInputValue = full_path_or_basename
+
 	basename = path.Base(full_path_or_basename)
 
 	extension = ""
