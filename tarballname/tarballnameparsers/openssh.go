@@ -1,7 +1,8 @@
 package tarballnameparsers
 
 import (
-	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/AnimusPEXUS/utils/tarballname"
 )
@@ -12,37 +13,28 @@ func (self *TarballNameParser_OpenSSH) Parse(value string) (
 	*tarballname.ParsedTarballName,
 	error,
 ) {
+	return tarballname.ParseStrict(value)
+}
 
-	res, err := tarballname.ParseStrict(value)
-	if err != nil {
-		return nil, err
+func (self *TarballNameParser_OpenSSH) Render(value *tarballname.ParsedTarballName) (string, error) {
+	name := ""
+	if value.Name != "" {
+		name = value.Name + "-"
+	}
+	status := ""
+	if value.Status.Str != "" {
+		if len(value.Status.Arr) > 0 {
+			status += strings.ToLower(value.Status.Arr[0]) + value.Status.Arr[1]
+			if len(value.Status.Arr) > 2 {
+				status += "-" + strings.Join(value.Status.Arr[2:], ".")
+			}
+		}
 	}
 
-	len_arr := len(res.Status.Arr)
-
-	if !(len_arr == 0 || len_arr == 2) {
-		return nil, errors.New("invalid number of elements in status")
+	ext := ""
+	if value.Extension != "" {
+		ext = value.Extension
 	}
 
-	if len_arr == 0 {
-		return res, nil
-	}
-
-	{
-		p_num := res.Status.Arr[1]
-
-		version_sep := res.Version.DirtyArr[1]
-
-		res.Status.DirtyArr = []string{}
-		res.Status.Arr = []string{}
-		res.Status.DirtyStr = ""
-		res.Status.Str = ""
-
-		res.Version.Arr = append(res.Version.Arr, p_num)
-		res.Version.DirtyArr = append(res.Version.DirtyArr, []string{version_sep, p_num}...)
-		res.Version.DirtyStr += version_sep + p_num
-		res.Version.Str += "." + p_num
-	}
-
-	return res, nil
+	return fmt.Sprintf("%s%s%s%s", name, value.Version.Str, status, ext), nil
 }

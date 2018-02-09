@@ -1,7 +1,7 @@
 package versioncomparators
 
 import (
-	"errors"
+	"github.com/AnimusPEXUS/utils/sort"
 
 	"github.com/AnimusPEXUS/utils/tarballname"
 	"github.com/AnimusPEXUS/utils/tarballname/tarballnameparsers/types"
@@ -12,6 +12,14 @@ func init() {
 }
 
 type VersionComparatorStd struct {
+}
+
+func (self *VersionComparatorStd) RenderNumericalVersion(
+	tarballbasename *tarballname.ParsedTarballName,
+) (
+	[]int, error,
+) {
+	return tarballbasename.Version.ArrInt()
 }
 
 func (self *VersionComparatorStd) Compare(
@@ -64,33 +72,36 @@ func (self *VersionComparatorStd) _Sort(
 	tarballbasenames []*tarballname.ParsedTarballName,
 ) error {
 
-	sort_strings := len(tarballbasenames_s) == len(tarballbasenames)
-
-	for i := 0; i < len(tarballbasenames)-1; i++ {
-		for j := i + 1; j < len(tarballbasenames); j++ {
-			pi := tarballbasenames[i]
-			pj := tarballbasenames[j]
-
-			// TODO: is this check really needed and correct?
-			if pi.Name != pj.Name {
-				return errors.New("by version sort name dismuch")
-			}
-
-			res, err := self.Compare(pi, pj)
-			if err != nil {
-				return err
-			}
-
-			if res == 1 {
-				tarballbasenames[i], tarballbasenames[j] =
-					tarballbasenames[j], tarballbasenames[i]
-				if sort_strings {
-					tarballbasenames_s[i], tarballbasenames_s[j] =
-						tarballbasenames_s[j], tarballbasenames_s[i]
-				}
-			}
-		}
+	what_to_sort := []interface{}{
+		tarballbasenames,
 	}
+
+	if len(tarballbasenames_s) == len(tarballbasenames) {
+		what_to_sort = append(what_to_sort, tarballbasenames_s)
+	}
+
+	err := sort.Sort(
+		what_to_sort,
+		0,
+		func(
+			i interface{},
+			j interface{},
+		) (int, error) {
+			res, err := self.Compare(
+				i.(*tarballname.ParsedTarballName),
+				j.(*tarballname.ParsedTarballName),
+			)
+			if err != nil {
+				return -100, err
+			}
+			return res, nil
+		},
+		false,
+	)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

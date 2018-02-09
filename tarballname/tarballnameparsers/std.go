@@ -13,3 +13,7 @@ func (self *TarballNameParser_Std) Parse(value string) (
 
 	return tarballname.ParseStrict(value)
 }
+
+func (self *TarballNameParser_Std) Render(value *tarballname.ParsedTarballName) (string, error) {
+	return value.Render(true), nil
+}

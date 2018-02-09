@@ -11,6 +11,7 @@ import (
 	"github.com/AnimusPEXUS/utils/filepath"
 	"github.com/AnimusPEXUS/utils/set"
 	"github.com/AnimusPEXUS/utils/tarballname/tarballnameparsers/types"
+	types2 "github.com/AnimusPEXUS/utils/version/versioncomparators/types"
 )
 
 type VersionTree struct {
@@ -18,16 +19,19 @@ type VersionTree struct {
 
 	tarball_name_regexp string
 	tarball_name_parser types.TarballNameParserI
+	comparator          types2.VersionComparatorI
 }
 
 func NewVersionTree(
 	tarball_name_regexp string,
 	tarball_name_parser types.TarballNameParserI,
+	comparator types2.VersionComparatorI,
 ) (*VersionTree, error) {
 	ret := new(VersionTree)
 
 	ret.tarball_name_regexp = tarball_name_regexp
 	ret.tarball_name_parser = tarball_name_parser
+	ret.comparator = comparator
 
 	// if t, err := tarballnameparsers.Get(tarball_name_parser); err != nil {
 	// 	return nil, err
@@ -62,12 +66,17 @@ func (self *VersionTree) Add(basename string) error {
 		}
 	}
 
-	version_list, err := res.Version.ArrUInt()
+	version_list, err := self.comparator.RenderNumericalVersion(res)
 	if err != nil {
 		return err
 	}
 
-	path_part := make([]uint, 0)
+	// version_list, err := res.Version.ArrInt()
+	// if err != nil {
+	// 	return err
+	// }
+
+	path_part := make([]int, 0)
 	for _, i := range version_list[:len(version_list)-1] {
 		path_part = append(path_part, i)
 	}
@@ -125,7 +134,7 @@ func (self *VersionTree) Add(basename string) error {
 func (self *VersionTree) RestoreBase(
 	directory *directory.File,
 	value []string,
-	as_name uint,
+	as_name int,
 ) error {
 
 	as_name_s := strconv.Itoa(int(as_name))
@@ -275,4 +284,8 @@ func (self *VersionTree) Basenames(
 
 	return bases, nil
 
+}
+
+func (self *VersionTree) TreeString() (string, error) {
+	return self.d.TreeString()
 }

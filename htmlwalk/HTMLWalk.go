@@ -111,13 +111,6 @@ searching:
 		for _, j := range i.Attr {
 			if j.Key == "href" {
 
-				// {
-				// 	u, err := url.Parse(j.Val)
-				// 	if err == nil {
-				// 		fmt.Println("is abs?:", j.Val, u.IsAbs())
-				// 	}
-				// }
-
 				if u, err := url.Parse(j.Val); err == nil && (u.Host != "" ||
 					u.Scheme != "" ||
 					u.RawQuery != "") {

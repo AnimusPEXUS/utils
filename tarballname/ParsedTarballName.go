@@ -7,8 +7,8 @@ import (
 type ParsedTarballName struct {
 	Basename           string
 	Name               string
-	Version            ParsedVersion
-	Status             ParsedStatus
+	Version            *ParsedVersion
+	Status             *ParsedStatus
 	Extension          string
 	OriginalInputValue string
 }

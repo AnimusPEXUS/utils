@@ -6,6 +6,9 @@ import (
 )
 
 type VersionComparatorI interface {
+	RenderNumericalVersion(tarballbasename *tarballname.ParsedTarballName) (
+		[]int, error,
+	)
 	Compare(
 		tarballbasename1, tarballbasename2 *tarballname.ParsedTarballName,
 	) (

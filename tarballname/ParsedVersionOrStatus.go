@@ -3,6 +3,7 @@ package tarballname
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type ParsedVersion struct{ ParsedVersionOrStatus }
@@ -70,6 +71,27 @@ func DefaultVersionSplitter(
 	}
 
 	defaultVersionSplitterSub0(ret)
+
+	return ret
+}
+
+func NewParsedVersionFromArrInt(value []int) *ParsedVersion {
+	ret := new(ParsedVersion)
+	for _, i := range value {
+		ret.Arr = append(ret.Arr, strconv.Itoa(i))
+	}
+
+	ret.Str = strings.Join(ret.Arr, ".")
+
+	len_arr := len(ret.Arr)
+	for ii, i := range ret.Arr {
+		ret.DirtyArr = append(ret.DirtyArr, i)
+		if ii < len_arr-1 {
+			ret.DirtyArr = append(ret.DirtyArr, ".")
+		}
+	}
+
+	ret.DirtyStr = strings.Join(ret.DirtyArr, "")
 
 	return ret
 }

@@ -124,11 +124,6 @@ func FilterList(
 	error,
 ) {
 
-	// fmt.Println("FilterList")
-	// fmt.Println("in_list", in_list)
-	// fmt.Println("filters", filters)
-	// fmt.Println("functions", functions)
-
 	out_list := set.NewSetString()
 
 	for _, i := range in_list {

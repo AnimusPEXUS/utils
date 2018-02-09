@@ -560,7 +560,9 @@ func ParseEx(
 	version_splitted =
 		version_splitter_function(name_sliced, *most_possible_version)
 
-	ret.Version = *version_splitted
+	ret.Version = version_splitted
+
+	ret.Status = new(ParsedStatus)
 
 	ret.Status.DirtyArr = name_sliced[most_possible_version[1]:]
 
