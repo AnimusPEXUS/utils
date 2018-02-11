@@ -5,61 +5,10 @@ import (
 	"reflect"
 )
 
-// func Sort(
-// 	slices [][]interface{},
-// 	control_slice_index int,
-// 	compare func(i, j interface{}) (int, error),
-// 	reverse bool,
-// ) error {
-//
-// 	if !(control_slice_index >= 0 && control_slice_index < len(slices)) {
-// 		return errors.New("control_slice_index out of range")
-// 	}
-//
-// 	css_len := len(slices[control_slice_index])
-//
-// 	for _, i := range slices {
-// 		if len(i) != css_len {
-// 			return errors.New("invalid lengths of slices in 'slices'")
-// 		}
-// 	}
-//
-// 	if css_len < 2 {
-// 		return nil
-// 	}
-//
-// 	swap := func(i, j int) {
-// 		for _, k := range slices {
-// 			k[i], k[j] = k[j], k[i]
-// 		}
-// 	}
-//
-// 	for i := 0; i < css_len-1; i++ {
-// 		for j := i + 1; j < css_len; j++ {
-//
-// 			ii := slices[control_slice_index][i]
-// 			ij := slices[control_slice_index][j]
-//
-// 			res, err := compare(ii, ij)
-// 			if err != nil {
-// 				return err
-// 			}
-//
-// 			if !reverse {
-// 				if res < 0 {
-// 					swap(i, j)
-// 				}
-// 			} else {
-// 				if res > 0 {
-// 					swap(i, j)
-// 				}
-// 			}
-//
-// 		}
-// 	}
-// 	return nil
-// }
-
+// 'slices' must be slice of slices. all slices in 'slices' must have
+// same number of items. control_slice_index determines which slice's elements
+// will be fed to compare callback. all slices inside 'slices' will be
+// simultaniously sorted accordingly to 'compare's responses.
 func Sort(
 	slices interface{},
 	control_slice_index int,
