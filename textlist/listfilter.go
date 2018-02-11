@@ -132,13 +132,16 @@ func FilterList(
 
 	for _, i := range filters {
 		if _, ok := functions[i.Func]; !ok {
-			return out_list.ListStrings(),
-				errors.New("requested function not found: " + i.Func)
+			return nil, errors.New("requested function not found: " + i.Func)
 		}
 	}
 
 	for _, filter := range filters {
-		funct := functions[filter.Func]
+		funct, ok := functions[filter.Func]
+
+		if !ok {
+			return nil, errors.New("function with this name not found")
+		}
 
 		for _, line := range in_list {
 			matched, err := funct(
@@ -148,7 +151,7 @@ func FilterList(
 				data,
 			)
 			if err != nil {
-				return out_list.ListStrings(), err
+				return nil, err
 			}
 
 			if filter.NotFunc {
