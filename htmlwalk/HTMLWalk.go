@@ -71,9 +71,6 @@ func (self *HTMLWalk) ListDirNotCached(pth string) (
 	error,
 ) {
 
-	dirs := make([]os.FileInfo, 0)
-	files := make([]os.FileInfo, 0)
-
 	pth = path.Clean(pth)
 
 	u := &url.URL{
@@ -82,9 +79,26 @@ func (self *HTMLWalk) ListDirNotCached(pth string) (
 		Path:   pth,
 	}
 
+	// c := new(http.Client)
+	//
+	// req, err := http.NewRequest("GET", u.String(), nil)
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
+	//
+	// req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101 Firefox/59.0")
+	// req.Header.Set("Host", self.host)
+	//
+	// req.Header.Write(os.Stdout)
+	//
+	// r, err := c.Do(req)
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
+
 	r, err := http.Get(u.String())
 	if err != nil {
-		return dirs, files, err
+		return nil, nil, err
 	}
 
 	if !strings.HasPrefix(strconv.Itoa(r.StatusCode), "2") {
@@ -99,7 +113,7 @@ func (self *HTMLWalk) ListDirNotCached(pth string) (
 	doc, err := htmlquery.Parse(b)
 
 	if err != nil {
-		return dirs, files, err
+		return nil, nil, err
 	}
 
 	res := htmlquery.Find(doc, ".//a")
@@ -143,6 +157,9 @@ searching:
 			}
 		}
 	}
+
+	dirs := make([]os.FileInfo, 0)
+	files := make([]os.FileInfo, 0)
 
 	for _, i := range s.ListStrings() {
 		if strings.HasSuffix(i, "/") {
