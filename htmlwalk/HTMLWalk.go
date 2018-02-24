@@ -3,6 +3,7 @@ package htmlwalk
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -202,7 +203,7 @@ func (self *HTMLWalk) ListDir(pth string) (
 
 		d, f, err := self.ListDirNotCached(pth)
 		if err != nil {
-			return []byte{}, err
+			return nil, err
 		}
 
 		c := &Container{}
@@ -216,7 +217,7 @@ func (self *HTMLWalk) ListDir(pth string) (
 
 		ret, err := json.Marshal(c)
 		if err != nil {
-			return []byte{}, err
+			return nil, err
 		}
 
 		return ret, nil
@@ -337,4 +338,29 @@ func (self *HTMLWalk) Tree(pth string) (map[string]os.FileInfo, error) {
 	}
 
 	return ret, nil
+}
+
+func (self *HTMLWalk) GetDownloadingURIForFile(
+	name string,
+	tree_pth string,
+) (string, error) {
+	name = path.Base(name)
+
+	tree, err := self.Tree(tree_pth)
+	if err != nil {
+		return "", err
+	}
+
+	for k, _ := range tree {
+		if path.Base(k) == name {
+			u := &url.URL{
+				Scheme: self.scheme,
+				Host:   self.host,
+				Path:   k,
+			}
+			return u.String(), nil
+		}
+	}
+
+	return "", errors.New("not found")
 }

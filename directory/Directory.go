@@ -431,7 +431,7 @@ func (self *File) GetValue() interface{} {
 
 func (self *File) FindFile(pattern string) ([]string, error) {
 	// if self.parent == nil {
-	// 	return []string{}, errors.New("this method allowed only on root")
+	// 	return nil, errors.New("this method allowed only on root")
 	// }
 	ret := make([]string, 0)
 	err := self.Walk(
@@ -455,7 +455,7 @@ func (self *File) FindFile(pattern string) ([]string, error) {
 		},
 	)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 	return ret, nil
 }

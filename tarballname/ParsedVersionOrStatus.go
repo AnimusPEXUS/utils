@@ -45,7 +45,7 @@ func (self *ParsedVersionOrStatus) ArrInt() ([]int, error) {
 func (self *ParsedVersionOrStatus) ArrUInt() ([]uint, error) {
 	res, err := self.ArrInt()
 	if err != nil {
-		return []uint{}, err
+		return nil, err
 	}
 	ret := make([]uint, len(res))
 	for ii, i := range res {

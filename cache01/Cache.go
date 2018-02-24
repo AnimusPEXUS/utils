@@ -63,7 +63,7 @@ func (self *Cache) GetValue() ([]byte, error) {
 		} else {
 			to, err := self.dir.GetTimeout()
 			if err != nil {
-				return []byte{}, err
+				return nil, err
 			}
 			if dif > to {
 				get_new_data = true
@@ -74,17 +74,17 @@ func (self *Cache) GetValue() ([]byte, error) {
 	if get_new_data {
 		data, err := self.cb()
 		if err != nil {
-			return []byte{}, err
+			return nil, err
 		}
 		err = self.SetValue(data)
 		if err != nil {
-			return []byte{}, err
+			return nil, err
 		}
 		return data, nil
 	} else {
 		data, err := ioutil.ReadFile(filename)
 		if err != nil {
-			return []byte{}, err
+			return nil, err
 		}
 		return data, nil
 	}

@@ -279,7 +279,7 @@ func (self *VersionTree) Basenames(
 		},
 	)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	return bases, nil

@@ -76,7 +76,7 @@ func (self *LaunchpadNetWalk) _GetReleases() (*LPReleasesStruct, error) {
 
 			http_res, err := http.Get(u.String())
 			if err != nil {
-				return []byte{}, err
+				return nil, err
 			}
 
 			b := new(bytes.Buffer)
@@ -137,7 +137,7 @@ func (self *LaunchpadNetWalk) _GetReleaseFiles(title string) ([][2]string, error
 
 			http_res, err := http.Get(uri)
 			if err != nil {
-				return []byte{}, err
+				return nil, err
 			}
 
 			b := new(bytes.Buffer)

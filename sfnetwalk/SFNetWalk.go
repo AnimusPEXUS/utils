@@ -164,7 +164,7 @@ func (self *SFNetWalk) ListDir(pth string) (
 
 		d, f, err := self.ListDirNotCached(pth)
 		if err != nil {
-			return []byte{}, err
+			return nil, err
 		}
 
 		c := &Container{}
@@ -178,7 +178,7 @@ func (self *SFNetWalk) ListDir(pth string) (
 
 		ret, err := json.Marshal(c)
 		if err != nil {
-			return []byte{}, err
+			return nil, err
 		}
 
 		return ret, nil
