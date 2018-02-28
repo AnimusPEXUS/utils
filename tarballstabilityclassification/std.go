@@ -12,14 +12,27 @@ func init() {
 type ClassifierStd struct {
 }
 
+// NOTE: as aipsetup now enforces use of stability check modules upon
+//       updating tarballs repository, there must be a module, which allways
+//       returns 'Release' value. 'std' MUST be this module!
+
 func (self *ClassifierStd) Check(parsed *tarballname.ParsedTarballName) (
 	types.StabilityClassification,
 	error,
 ) {
 
-	if parsed.Status.Str != "" {
-		return types.Development, nil
-	}
+	// switch parsed.Status.DirtyStr {
+	// default:
+	// 	return types.Development, nil
+	// case "":
+	// 	fallthrough
+	// case "src":
+	// 	fallthrough
+	// case "source":
+	// 	fallthrough
+	// case "release":
+	// 	return types.Release, nil
+	// }
 
 	return types.Release, nil
 }
