@@ -33,6 +33,7 @@ type HTMLWalk struct {
 	log *logger.Logger
 
 	exclude_paths []string
+	maxdepth      int
 }
 
 func NewHTMLWalk(
@@ -41,6 +42,7 @@ func NewHTMLWalk(
 	cache *cache01.CacheDir,
 	log *logger.Logger,
 	exclude_paths []string,
+	maxdepth int,
 ) (*HTMLWalk, error) {
 	self := new(HTMLWalk)
 	self.scheme = scheme
@@ -51,6 +53,7 @@ func NewHTMLWalk(
 	self.log = log
 
 	self.exclude_paths = exclude_paths
+	self.maxdepth = maxdepth
 	return self, nil
 }
 
@@ -275,6 +278,20 @@ func (self *HTMLWalk) Walk(
 		files []os.FileInfo,
 	) error,
 ) error {
+	return self._Walk(pth, target, self.maxdepth)
+}
+
+func (self *HTMLWalk) _Walk(
+	pth string,
+	target func(
+		dir string,
+		dirs []os.FileInfo,
+		files []os.FileInfo,
+	) error,
+	maxdepth int,
+) error {
+
+	maxdepth--
 
 	dirs, files, err := self.ListDir(pth)
 	if err != nil {
@@ -300,10 +317,18 @@ func (self *HTMLWalk) Walk(
 			}
 		}
 		if !found {
-			err = self.Walk(j, target)
-			if err != nil {
-				return err
+
+			// fmt.Println("len(strings.Split(j, \"/\"))", len(strings.Split(j, "/")))
+
+			if self.maxdepth < 0 || maxdepth > 0 {
+				err = self._Walk(j, target, maxdepth)
+				if err != nil {
+					return err
+				}
 			}
+
+			// if self.maxdepth < 0 || (self.maxdepth > -1 && len(strings.Split(j, "/")) < self.maxdepth) {
+			// }
 		}
 	}
 
