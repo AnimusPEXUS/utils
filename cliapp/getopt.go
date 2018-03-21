@@ -143,6 +143,10 @@ func (self *GetOptResult) DoesNamedRetOptItemHaveValue(name string) bool {
 	return false
 }
 
+func (self *GetOptResult) GetOptionByName(name string) *GetOptCheckListItem {
+	return self.NodeInfo.AvailableOptions.GetByName(name)
+}
+
 type RetOptItem struct {
 	Name      string
 	HaveValue bool
@@ -225,12 +229,33 @@ func GetOpt(args []string) *GetOptResult {
 }
 
 type GetOptCheckListItem struct {
-	Name          string // with leading '-' (minuses)
-	HaveDefault   bool   // put here true if Default field have some meaning
-	Default       string // default value in case if defined without value
-	IsRequired    bool   // put here true, if user MUST set this flag
-	MustHaveValue bool   // insist on value to flag
-	Description   string // this text will be printed beside option on --help parameter
+	/*
+		must be with leading '-' (minuses) and without trailing '=' equals
+	*/
+	Name string
+
+	/*
+		set this to true if Default have meaningful value
+	*/
+	HaveDefault bool
+
+	/*
+		default value in case if defined without value
+	*/
+	Default string
+
+	/*
+		put here true, if user MUST set this flag
+	*/
+	IsRequired bool
+
+	/* insist on value to flag.
+	if this is true, and value not passed to option,
+	then if HaveDefault is true then Default is used as value.
+	*/
+	MustHaveValue bool
+
+	Description string // this text will be printed beside option on --help parameter
 }
 
 func (self *GetOptCheckListItem) HelpString() string {
@@ -252,6 +277,15 @@ func (self *GetOptCheckListItem) HelpString() string {
 }
 
 type GetOptCheckList []*GetOptCheckListItem
+
+func (self GetOptCheckList) GetByName(name string) *GetOptCheckListItem {
+	for _, i := range self {
+		if i.Name == name {
+			return i
+		}
+	}
+	return nil
+}
 
 func (self GetOptCheckList) HelpString() string {
 	ret := ""
