@@ -154,6 +154,7 @@ func Walk(
 	return nil
 }
 
+// Walks inside src_path and copying files to dst_path
 func CopyTree(
 	src_path string,
 	dst_path string,

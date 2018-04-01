@@ -87,6 +87,8 @@ type LoggerI interface {
 	Info(string)
 	Warning(string)
 	Error(interface{})
+	PutEntry(type_ EntryType, value interface{})
+	PutEntryComplete(entry *LogEntry)
 }
 
 type Logger struct {
@@ -131,8 +133,9 @@ func (self *Logger) addOutputOpt(out interface{}, opts *OutputOptions) uint64 {
 	switch out.(type) {
 	case io.Writer:
 	case io.WriteCloser:
+	case LoggerI:
 	default:
-		panic("only io.Writer or io.WriteCloser may be passed")
+		panic("only io.Writer, io.WriteCloser or *Logger may be passed")
 	}
 	ret := self.output_counter
 	self.outputs[ret] = &WriterWrapper{out, opts}
@@ -189,8 +192,12 @@ func (self *Logger) PutEntry(type_ EntryType, value interface{}) {
 
 	log_entry := &LogEntry{type_, time.Now().UTC(), value_str}
 
+	self.PutEntryComplete(log_entry)
+}
+
+func (self *Logger) PutEntryComplete(entry *LogEntry) {
 	for _, cb := range self.callbacks {
-		cb(log_entry, self)
+		cb(entry, self)
 	}
 
 	wg := &sync.WaitGroup{}
@@ -201,12 +208,20 @@ func (self *Logger) PutEntry(type_ EntryType, value interface{}) {
 			i *WriterWrapper,
 			wg *sync.WaitGroup,
 		) {
-			self._WriteOutput(i, log_entry)
+			switch i.out.(type) {
+			case io.Writer:
+				self._WriteOutput(i, entry)
+			case io.WriteCloser:
+				self._WriteOutput(i, entry)
+			case LoggerI:
+				i.out.(LoggerI).PutEntryComplete(entry)
+			}
 			wg.Done()
 		}(i, wg)
 	}
 
 	wg.Wait()
+
 }
 
 func (self *Logger) _WriteOutput(
