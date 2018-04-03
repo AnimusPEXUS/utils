@@ -20,7 +20,7 @@ type (
 		Subnode          *AppCmdNode
 		Rootnode         *AppCmdNode
 		Arg0             string
-		PassData         *interface{}
+		PassData         interface{}
 	}
 
 	AppCmdNode struct {
@@ -114,7 +114,7 @@ func CheckAppCmdNode(in *AppCmdNode, depth []string) {
 //       use RunCmd to avoid os.Exit
 func RunApp(
 	rootnode *AppCmdNode,
-	pass_data *interface{},
+	pass_data interface{},
 ) {
 
 	res := RunCmd(os.Args[0], os.Args[1:], rootnode, pass_data)
@@ -132,7 +132,7 @@ func RunCmd(
 	arg0 string,
 	opts_and_args []string,
 	rootnode *AppCmdNode,
-	pass_data *interface{},
+	pass_data interface{},
 ) *AppResult {
 
 	var (
