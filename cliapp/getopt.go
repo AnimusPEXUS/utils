@@ -58,25 +58,31 @@ func (self *GetOptResult) GetAllNamedRetOptItems(name string) []RetOptItem {
 func (self *GetOptResult) CheckOptResult() []error {
 	ret := make([]error, 0)
 	for _, i := range self.NodeInfo.AvailableOptions {
-		if i.IsRequired {
-			if !self.DoesHaveNamedRetOptItem(i.Name) {
+
+		if !self.DoesHaveNamedRetOptItem(i.Name) {
+			if i.IsRequired {
 				ret = append(
 					ret,
 					errors.New("option "+i.Name+" is required but absent"),
 				)
 			}
-		} else {
-			if !self.DoesHaveNamedRetOptItem(i.Name) && i.HaveDefault {
-				self.Opts = append(
-					self.Opts,
-					&RetOptItem{
-						Name:      i.Name,
-						HaveValue: true,
-						Value:     i.Default,
-					},
-				)
-			}
+			continue
 		}
+
+		// removed on 11 apr 2018: if user didn't passed option - it shouldn't be
+		// created by force.
+		//  else {
+		// 	if !self.DoesHaveNamedRetOptItem(i.Name) && i.HaveDefault {
+		// 		self.Opts = append(
+		// 			self.Opts,
+		// 			&RetOptItem{
+		// 				Name:      i.Name,
+		// 				HaveValue: true,
+		// 				Value:     i.Default,
+		// 			},
+		// 		)
+		// 	}
+		// }
 
 		if i.MustHaveValue {
 			item := self.GetLastNamedRetOptItem(i.Name)
@@ -235,7 +241,7 @@ type GetOptCheckListItem struct {
 	Name string
 
 	/*
-		set this to true if Default have meaningful value
+		set this to true if Default value have meaning
 	*/
 	HaveDefault bool
 
