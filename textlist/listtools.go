@@ -16,3 +16,16 @@ search:
 
 	return ret
 }
+
+func RemoveZeroLengthItems(in []string) []string {
+
+	ret := make([]string, 0)
+
+	for _, i := range in {
+		if len(i) != 0 {
+			ret = append(ret, i)
+		}
+	}
+
+	return ret
+}
