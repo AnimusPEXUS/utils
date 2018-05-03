@@ -14,8 +14,11 @@ func New() EnvVarEd {
 func NewFromStrings(envs []string) EnvVarEd {
 	ret := New()
 	for _, i := range envs {
-		res := strings.SplitN(i, "=", 1)
-		ret[res[0]] = res[1]
+		res_i := strings.Index(i, "=")
+		if res_i == -1 {
+			panic("couldn't split string: " + i)
+		}
+		ret[i[:res_i]] = i[res_i+1:]
 	}
 	return ret
 }
