@@ -3,20 +3,22 @@ package versioncomparators
 import (
 	"errors"
 	"strconv"
+	"strings"
 
 	"github.com/AnimusPEXUS/utils/sort"
 	"github.com/AnimusPEXUS/utils/tarballname"
 	"github.com/AnimusPEXUS/utils/tarballname/tarballnameparsers/types"
+	"github.com/AnimusPEXUS/utils/versionorstatus"
 )
 
 func init() {
-	Index["ImageMagick"] = &VersionComparatorImageMagick{}
+	Index["kismet"] = &VersionComparatorKismet{}
 }
 
-type VersionComparatorImageMagick struct {
+type VersionComparatorKismet struct {
 }
 
-func (self *VersionComparatorImageMagick) RenderNumericalVersion(
+func (self *VersionComparatorKismet) RenderNumericalVersion(
 	tarballbasename *tarballname.ParsedTarballName,
 ) (
 	[]int, error,
@@ -29,7 +31,7 @@ func (self *VersionComparatorImageMagick) RenderNumericalVersion(
 
 	len_arr := len(tarballbasename.Status.Arr)
 
-	if !(len_arr == 0 || len_arr == 1) {
+	if !(len_arr == 0 || len_arr == 2 || len_arr == 3) {
 		return nil, errors.New("invalid number of elements in status")
 	}
 
@@ -37,23 +39,40 @@ func (self *VersionComparatorImageMagick) RenderNumericalVersion(
 		return ret, nil
 	}
 
-	p_num := tarballbasename.Status.Arr[0]
+	p_num := tarballbasename.Status.Arr[1]
 	p_num_i, err := strconv.Atoi(p_num)
 	if err != nil {
 		return nil, err
 	}
 	ret = append(ret, p_num_i)
 
+	if len_arr == 3 {
+		letter_versions_int := make([]int, 0)
+
+		{
+			stat_arr2 := tarballbasename.Status.Arr[2]
+			splitted_stat := strings.Split(stat_arr2, "")
+
+			for _, i := range splitted_stat {
+				ii := int(byte(i[0]) - 96)
+				letter_versions_int = append(letter_versions_int, ii)
+			}
+		}
+
+		ret = append(ret, letter_versions_int...)
+
+	}
+
 	return ret, nil
 }
 
-func (self *VersionComparatorImageMagick) Compare(
+func (self *VersionComparatorKismet) Compare(
 	tarballbasename1, tarballbasename2 *tarballname.ParsedTarballName,
 ) (int, error) {
 	return Index["std"].Compare(tarballbasename1, tarballbasename2)
 }
 
-func (self *VersionComparatorImageMagick) _Sort(
+func (self *VersionComparatorKismet) _Sort(
 	tarballbasenames_s []string,
 	tarballbasenames []*tarballname.ParsedTarballName,
 ) error {
@@ -86,12 +105,12 @@ func (self *VersionComparatorImageMagick) _Sort(
 		) (int, error) {
 			pi := &tarballname.ParsedTarballName{
 				Name:    "aaa",
-				Version: tarballname.NewParsedVersionFromArrInt(i.([]int)),
+				Version: versionorstatus.NewParsedVersionFromArrInt(i.([]int)),
 			}
 
 			pj := &tarballname.ParsedTarballName{
 				Name:    "aaa",
-				Version: tarballname.NewParsedVersionFromArrInt(j.([]int)),
+				Version: versionorstatus.NewParsedVersionFromArrInt(j.([]int)),
 			}
 
 			// TODO: is this check really needed and correct?
@@ -114,13 +133,13 @@ func (self *VersionComparatorImageMagick) _Sort(
 	return nil
 }
 
-func (self *VersionComparatorImageMagick) Sort(
+func (self *VersionComparatorKismet) Sort(
 	tarballbasenames []*tarballname.ParsedTarballName,
 ) error {
 	return self._Sort([]string{}, tarballbasenames)
 }
 
-func (self *VersionComparatorImageMagick) SortStrings(
+func (self *VersionComparatorKismet) SortStrings(
 	tarballbasenames_s []string,
 	parser types.TarballNameParserI,
 ) error {

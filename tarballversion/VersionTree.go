@@ -1,4 +1,4 @@
-package version
+package tarballversion
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ import (
 	"github.com/AnimusPEXUS/utils/filepath"
 	"github.com/AnimusPEXUS/utils/set"
 	"github.com/AnimusPEXUS/utils/tarballname/tarballnameparsers/types"
-	types2 "github.com/AnimusPEXUS/utils/version/versioncomparators/types"
+	types2 "github.com/AnimusPEXUS/utils/tarballversion/versioncomparators/types"
 )
 
 type VersionTree struct {

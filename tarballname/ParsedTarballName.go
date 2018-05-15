@@ -2,13 +2,15 @@ package tarballname
 
 import (
 	"fmt"
+
+	"github.com/AnimusPEXUS/utils/versionorstatus"
 )
 
 type ParsedTarballName struct {
 	Basename           string
 	Name               string
-	Version            *ParsedVersion
-	Status             *ParsedStatus
+	Version            *versionorstatus.ParsedVersion
+	Status             *versionorstatus.ParsedStatus
 	Extension          string
 	OriginalInputValue string
 }

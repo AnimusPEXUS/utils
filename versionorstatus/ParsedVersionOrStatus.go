@@ -1,4 +1,4 @@
-package tarballname
+package versionorstatus
 
 import (
 	"fmt"
@@ -52,27 +52,6 @@ func (self *ParsedVersionOrStatus) ArrUInt() ([]uint, error) {
 		ret[ii] = uint(i)
 	}
 	return ret, nil
-}
-
-func DefaultVersionSplitter(
-	name_sliced SlicedName,
-	most_possible_version Slice,
-) *ParsedVersion {
-	var (
-		ret *ParsedVersion
-	)
-
-	ret = new(ParsedVersion)
-
-	ret.DirtyArr = append(ret.DirtyArr[:0], ret.DirtyArr[:0]...)
-
-	for _, j := range name_sliced[most_possible_version[0]:most_possible_version[1]] {
-		ret.DirtyArr = append(ret.DirtyArr, j)
-	}
-
-	defaultVersionSplitterSub0(ret)
-
-	return ret
 }
 
 func NewParsedVersionFromArrInt(value []int) *ParsedVersion {

@@ -3,21 +3,21 @@ package versioncomparators
 import (
 	"errors"
 	"strconv"
-	"strings"
 
 	"github.com/AnimusPEXUS/utils/sort"
 	"github.com/AnimusPEXUS/utils/tarballname"
 	"github.com/AnimusPEXUS/utils/tarballname/tarballnameparsers/types"
+	"github.com/AnimusPEXUS/utils/versionorstatus"
 )
 
 func init() {
-	Index["kismet"] = &VersionComparatorKismet{}
+	Index["lynx"] = &VersionComparatorLynx{}
 }
 
-type VersionComparatorKismet struct {
+type VersionComparatorLynx struct {
 }
 
-func (self *VersionComparatorKismet) RenderNumericalVersion(
+func (self *VersionComparatorLynx) RenderNumericalVersion(
 	tarballbasename *tarballname.ParsedTarballName,
 ) (
 	[]int, error,
@@ -30,12 +30,12 @@ func (self *VersionComparatorKismet) RenderNumericalVersion(
 
 	len_arr := len(tarballbasename.Status.Arr)
 
-	if !(len_arr == 0 || len_arr == 2 || len_arr == 3) {
-		return nil, errors.New("invalid number of elements in status")
-	}
-
 	if len_arr == 0 {
 		return ret, nil
+	}
+
+	if !(len_arr > 1) {
+		return nil, errors.New("unsupported number of status elements")
 	}
 
 	p_num := tarballbasename.Status.Arr[1]
@@ -45,33 +45,16 @@ func (self *VersionComparatorKismet) RenderNumericalVersion(
 	}
 	ret = append(ret, p_num_i)
 
-	if len_arr == 3 {
-		letter_versions_int := make([]int, 0)
-
-		{
-			stat_arr2 := tarballbasename.Status.Arr[2]
-			splitted_stat := strings.Split(stat_arr2, "")
-
-			for _, i := range splitted_stat {
-				ii := int(byte(i[0]) - 96)
-				letter_versions_int = append(letter_versions_int, ii)
-			}
-		}
-
-		ret = append(ret, letter_versions_int...)
-
-	}
-
 	return ret, nil
 }
 
-func (self *VersionComparatorKismet) Compare(
+func (self *VersionComparatorLynx) Compare(
 	tarballbasename1, tarballbasename2 *tarballname.ParsedTarballName,
 ) (int, error) {
 	return Index["std"].Compare(tarballbasename1, tarballbasename2)
 }
 
-func (self *VersionComparatorKismet) _Sort(
+func (self *VersionComparatorLynx) _Sort(
 	tarballbasenames_s []string,
 	tarballbasenames []*tarballname.ParsedTarballName,
 ) error {
@@ -104,12 +87,12 @@ func (self *VersionComparatorKismet) _Sort(
 		) (int, error) {
 			pi := &tarballname.ParsedTarballName{
 				Name:    "aaa",
-				Version: tarballname.NewParsedVersionFromArrInt(i.([]int)),
+				Version: versionorstatus.NewParsedVersionFromArrInt(i.([]int)),
 			}
 
 			pj := &tarballname.ParsedTarballName{
 				Name:    "aaa",
-				Version: tarballname.NewParsedVersionFromArrInt(j.([]int)),
+				Version: versionorstatus.NewParsedVersionFromArrInt(j.([]int)),
 			}
 
 			// TODO: is this check really needed and correct?
@@ -132,13 +115,13 @@ func (self *VersionComparatorKismet) _Sort(
 	return nil
 }
 
-func (self *VersionComparatorKismet) Sort(
+func (self *VersionComparatorLynx) Sort(
 	tarballbasenames []*tarballname.ParsedTarballName,
 ) error {
 	return self._Sort([]string{}, tarballbasenames)
 }
 
-func (self *VersionComparatorKismet) SortStrings(
+func (self *VersionComparatorLynx) SortStrings(
 	tarballbasenames_s []string,
 	parser types.TarballNameParserI,
 ) error {

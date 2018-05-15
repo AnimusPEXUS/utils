@@ -8,6 +8,7 @@ import (
 	"github.com/AnimusPEXUS/utils/sort"
 	"github.com/AnimusPEXUS/utils/tarballname"
 	"github.com/AnimusPEXUS/utils/tarballname/tarballnameparsers/types"
+	"github.com/AnimusPEXUS/utils/versionorstatus"
 )
 
 func init() {
@@ -101,12 +102,12 @@ func (self *VersionComparatorOpenSSL) _Sort(
 		) (int, error) {
 			pi := &tarballname.ParsedTarballName{
 				Name:    "aaa",
-				Version: tarballname.NewParsedVersionFromArrInt(i.([]int)),
+				Version: versionorstatus.NewParsedVersionFromArrInt(i.([]int)),
 			}
 
 			pj := &tarballname.ParsedTarballName{
 				Name:    "aaa",
-				Version: tarballname.NewParsedVersionFromArrInt(j.([]int)),
+				Version: versionorstatus.NewParsedVersionFromArrInt(j.([]int)),
 			}
 
 			// TODO: is this check really needed and correct?

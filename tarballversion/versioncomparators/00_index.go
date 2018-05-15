@@ -3,7 +3,7 @@ package versioncomparators
 import (
 	"errors"
 
-	"github.com/AnimusPEXUS/utils/version/versioncomparators/types"
+	"github.com/AnimusPEXUS/utils/tarballversion/versioncomparators/types"
 )
 
 func Get(name string) (types.VersionComparatorI, error) {

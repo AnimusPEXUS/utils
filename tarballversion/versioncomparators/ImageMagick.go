@@ -7,16 +7,17 @@ import (
 	"github.com/AnimusPEXUS/utils/sort"
 	"github.com/AnimusPEXUS/utils/tarballname"
 	"github.com/AnimusPEXUS/utils/tarballname/tarballnameparsers/types"
+	"github.com/AnimusPEXUS/utils/versionorstatus"
 )
 
 func init() {
-	Index["openssh"] = &VersionComparatorOpenSSH{}
+	Index["ImageMagick"] = &VersionComparatorImageMagick{}
 }
 
-type VersionComparatorOpenSSH struct {
+type VersionComparatorImageMagick struct {
 }
 
-func (self *VersionComparatorOpenSSH) RenderNumericalVersion(
+func (self *VersionComparatorImageMagick) RenderNumericalVersion(
 	tarballbasename *tarballname.ParsedTarballName,
 ) (
 	[]int, error,
@@ -29,7 +30,7 @@ func (self *VersionComparatorOpenSSH) RenderNumericalVersion(
 
 	len_arr := len(tarballbasename.Status.Arr)
 
-	if !(len_arr == 0 || len_arr == 2) {
+	if !(len_arr == 0 || len_arr == 1) {
 		return nil, errors.New("invalid number of elements in status")
 	}
 
@@ -37,7 +38,7 @@ func (self *VersionComparatorOpenSSH) RenderNumericalVersion(
 		return ret, nil
 	}
 
-	p_num := tarballbasename.Status.Arr[1]
+	p_num := tarballbasename.Status.Arr[0]
 	p_num_i, err := strconv.Atoi(p_num)
 	if err != nil {
 		return nil, err
@@ -47,13 +48,13 @@ func (self *VersionComparatorOpenSSH) RenderNumericalVersion(
 	return ret, nil
 }
 
-func (self *VersionComparatorOpenSSH) Compare(
+func (self *VersionComparatorImageMagick) Compare(
 	tarballbasename1, tarballbasename2 *tarballname.ParsedTarballName,
 ) (int, error) {
 	return Index["std"].Compare(tarballbasename1, tarballbasename2)
 }
 
-func (self *VersionComparatorOpenSSH) _Sort(
+func (self *VersionComparatorImageMagick) _Sort(
 	tarballbasenames_s []string,
 	tarballbasenames []*tarballname.ParsedTarballName,
 ) error {
@@ -86,12 +87,12 @@ func (self *VersionComparatorOpenSSH) _Sort(
 		) (int, error) {
 			pi := &tarballname.ParsedTarballName{
 				Name:    "aaa",
-				Version: tarballname.NewParsedVersionFromArrInt(i.([]int)),
+				Version: versionorstatus.NewParsedVersionFromArrInt(i.([]int)),
 			}
 
 			pj := &tarballname.ParsedTarballName{
 				Name:    "aaa",
-				Version: tarballname.NewParsedVersionFromArrInt(j.([]int)),
+				Version: versionorstatus.NewParsedVersionFromArrInt(j.([]int)),
 			}
 
 			// TODO: is this check really needed and correct?
@@ -114,13 +115,13 @@ func (self *VersionComparatorOpenSSH) _Sort(
 	return nil
 }
 
-func (self *VersionComparatorOpenSSH) Sort(
+func (self *VersionComparatorImageMagick) Sort(
 	tarballbasenames []*tarballname.ParsedTarballName,
 ) error {
 	return self._Sort([]string{}, tarballbasenames)
 }
 
-func (self *VersionComparatorOpenSSH) SortStrings(
+func (self *VersionComparatorImageMagick) SortStrings(
 	tarballbasenames_s []string,
 	parser types.TarballNameParserI,
 ) error {
