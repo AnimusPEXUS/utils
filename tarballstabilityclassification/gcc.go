@@ -17,11 +17,11 @@ func (self *ClassifierGCC) Check(parsed *tarballname.ParsedTarballName) (
 	error,
 ) {
 
-	if parsed.Status.Str != "" {
+	if parsed.Status.String() != "" {
 		return types.Development, nil
 	}
 
-	version, err := parsed.Version.ArrInt()
+	version, err := parsed.Version.IntSlice()
 	if err != nil {
 		return types.Development, err
 	}

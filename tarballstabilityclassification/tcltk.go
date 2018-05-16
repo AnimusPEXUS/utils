@@ -17,7 +17,7 @@ func (self *ClassifierTclTk) Check(parsed *tarballname.ParsedTarballName) (
 	error,
 ) {
 
-	if parsed.Status.Str != "src" {
+	if parsed.Status.String() != "src" {
 		return types.Development, nil
 	}
 

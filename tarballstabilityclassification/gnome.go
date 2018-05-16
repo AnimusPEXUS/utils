@@ -22,11 +22,11 @@ func (self *ClassifierGnome) Check(parsed *tarballname.ParsedTarballName) (
 	error,
 ) {
 
-	if parsed.Status.Str != "" {
+	if parsed.Status.String() != "" {
 		return types.Development, nil
 	}
 
-	version, err := parsed.Version.ArrInt()
+	version, err := parsed.Version.IntSlice()
 	if err != nil {
 		return types.Development, err
 	}
@@ -40,7 +40,7 @@ func (self *ClassifierGnome) Check(parsed *tarballname.ParsedTarballName) (
 		return types.Development, nil
 	}
 
-	for _, i := range parsed.Version.Arr {
+	for _, i := range parsed.Version.StrSlice() {
 		if TESTING_9X_RE.MatchString(i) {
 			return types.Development, err
 		}

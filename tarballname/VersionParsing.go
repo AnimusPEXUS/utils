@@ -1,36 +1,50 @@
 package tarballname
 
 import (
-	"strings"
-
 	"github.com/AnimusPEXUS/utils/versionorstatus"
 )
 
-func defaultVersionSplitterSub0(parsed_version *versionorstatus.ParsedVersion) {
+type (
+	VersionFinderFunction func(name_sliced SlicedName) (*Slice, bool)
 
-	parsed_version.Arr = RemoveItemsList(parsed_version.DirtyArr, ALL_DELIMITERS)
-	parsed_version.Str = strings.Join(parsed_version.Arr, ".")
-	parsed_version.DirtyStr = strings.Join(parsed_version.DirtyArr, "")
+	VersionSplitterFunction func(
+		name_sliced SlicedName,
+		most_possible_version Slice,
+	) *versionorstatus.ParsedVersionOrStatus
 
-}
+	VersionsSelectorFunction func(tarballbasename string) (
+		VersionFinderFunction,
+		VersionSplitterFunction,
+	)
+)
+
+// func defaultVersionSplitterSub0(parsed_version *versionorstatus.ParsedVersionOrStatus) {
+//
+// 	parsed_version.Arr = RemoveItemsList(parsed_version.DirtyArr, ALL_DELIMITERS)
+// 	parsed_version.Str = strings.Join(parsed_version.Arr, ".")
+// 	parsed_version.DirtyStr = strings.Join(parsed_version.DirtyArr, "")
+//
+// }
 
 func DefaultVersionSplitter(
 	name_sliced SlicedName,
 	most_possible_version Slice,
-) *versionorstatus.ParsedVersion {
-	var (
-		ret *versionorstatus.ParsedVersion
-	)
+) *versionorstatus.ParsedVersionOrStatus {
 
-	ret = new(versionorstatus.ParsedVersion)
-
-	ret.DirtyArr = append(ret.DirtyArr[:0], ret.DirtyArr[:0]...)
+	values := make([]string, 0)
 
 	for _, j := range name_sliced[most_possible_version[0]:most_possible_version[1]] {
-		ret.DirtyArr = append(ret.DirtyArr, j)
+		values = append(values, j)
 	}
 
-	defaultVersionSplitterSub0(ret)
+	values = RemoveItemsList(values, ALL_DELIMITERS)
+
+	sep := "."
+	if len(values) > 1 {
+		sep = values[1]
+	}
+
+	ret := versionorstatus.NewParsedVersionOrStatusFromStringSlice(values, sep)
 
 	return ret
 }
@@ -47,17 +61,13 @@ func InfoZipVersionFinder(
 func InfoZipVersionSplitter(
 	name_sliced SlicedName,
 	most_possible_version Slice,
-) *versionorstatus.ParsedVersion {
-
-	ret := new(versionorstatus.ParsedVersion)
+) *versionorstatus.ParsedVersionOrStatus {
 
 	name_sliced1 := name_sliced[1]
 
-	splitted_version := []string{name_sliced1[:1], name_sliced1[1:]}
+	values := []string{name_sliced1[:1], name_sliced1[1:]}
 
-	ret.DirtyArr = append(ret.DirtyArr, splitted_version...)
-
-	defaultVersionSplitterSub0(ret)
+	ret := versionorstatus.NewParsedVersionOrStatusFromStringSlice(values, "")
 
 	return ret
 }

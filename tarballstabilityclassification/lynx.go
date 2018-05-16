@@ -19,11 +19,11 @@ func (self *ClassifierLynx) Check(parsed *tarballname.ParsedTarballName) (
 	error,
 ) {
 
-	if len(parsed.Status.Arr) == 0 {
+	if len(parsed.Status.StrSlice()) == 0 {
 		return types.Development, nil
 	}
 
-	lower := strings.ToLower(parsed.Status.Arr[0])
+	lower := strings.ToLower(parsed.Status.StrSlice()[0])
 
 	if strings.Contains(lower, "rel") {
 		return types.Release, nil

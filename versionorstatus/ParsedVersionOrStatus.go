@@ -6,33 +6,66 @@ import (
 	"strings"
 )
 
-type ParsedVersion struct{ ParsedVersionOrStatus }
-type ParsedStatus struct{ ParsedVersionOrStatus }
+// type ParsedVersion struct{ ParsedVersionOrStatus }
+// type ParsedStatus struct{ ParsedVersionOrStatus }
 
 type ParsedVersionOrStatus struct {
-	Str      string
-	DirtyStr string
-	Arr      []string
-	DirtyArr []string
+	values []string
+	sep    string
+}
+
+func NewParsedVersionOrStatusFromString(value, sep string) *ParsedVersionOrStatus {
+	self := new(ParsedVersionOrStatus)
+	self.values = strings.Split(value, sep)
+	self.sep = sep
+	return self
+}
+
+func NewParsedVersionOrStatusFromStringSlice(
+	values []string,
+	sep string,
+) *ParsedVersionOrStatus {
+	self := new(ParsedVersionOrStatus)
+	self.values = values
+	self.sep = sep
+	return self
+}
+
+func NewParsedVersionOrStatusFromIntSlice(value []int) *ParsedVersionOrStatus {
+	self := new(ParsedVersionOrStatus)
+	for _, i := range value {
+		self.values = append(self.values, strconv.Itoa(i))
+	}
+	return self
+}
+
+func (self *ParsedVersionOrStatus) DirtyString() string {
+	return strings.Join(self.values, self.sep)
+}
+
+func (self *ParsedVersionOrStatus) String() string {
+	return strings.Join(self.values, ".")
 }
 
 func (self *ParsedVersionOrStatus) InfoText() string {
-	ret := fmt.Sprintf(`  dirty_arr: %v
-  dirty_str: "%s"
-  arr:       %v
+	ret := fmt.Sprintf(`  Values: %v
+  String: "%s"
+  slice:     %v
   str:       "%s"`,
-		self.DirtyArr,
-		self.DirtyStr,
-		self.Arr,
-		self.Str,
+		self.StrSlice(),
+		self.String(),
 	)
 
 	return ret
 }
 
-func (self *ParsedVersionOrStatus) ArrInt() ([]int, error) {
+func (self *ParsedVersionOrStatus) StrSlice() []string {
+	return self.values
+}
+
+func (self *ParsedVersionOrStatus) IntSlice() ([]int, error) {
 	ret := make([]int, 0)
-	for _, i := range self.Arr {
+	for _, i := range self.StrSlice() {
 		res, err := strconv.Atoi(i)
 		if err != nil {
 			return ret, err
@@ -42,8 +75,8 @@ func (self *ParsedVersionOrStatus) ArrInt() ([]int, error) {
 	return ret, nil
 }
 
-func (self *ParsedVersionOrStatus) ArrUInt() ([]uint, error) {
-	res, err := self.ArrInt()
+func (self *ParsedVersionOrStatus) UIntSlice() ([]uint, error) {
+	res, err := self.IntSlice()
 	if err != nil {
 		return nil, err
 	}
@@ -52,25 +85,4 @@ func (self *ParsedVersionOrStatus) ArrUInt() ([]uint, error) {
 		ret[ii] = uint(i)
 	}
 	return ret, nil
-}
-
-func NewParsedVersionFromArrInt(value []int) *ParsedVersion {
-	ret := new(ParsedVersion)
-	for _, i := range value {
-		ret.Arr = append(ret.Arr, strconv.Itoa(i))
-	}
-
-	ret.Str = strings.Join(ret.Arr, ".")
-
-	len_arr := len(ret.Arr)
-	for ii, i := range ret.Arr {
-		ret.DirtyArr = append(ret.DirtyArr, i)
-		if ii < len_arr-1 {
-			ret.DirtyArr = append(ret.DirtyArr, ".")
-		}
-	}
-
-	ret.DirtyStr = strings.Join(ret.DirtyArr, "")
-
-	return ret
 }

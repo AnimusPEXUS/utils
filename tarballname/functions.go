@@ -110,18 +110,6 @@ type (
 
 	MapOfSinglesAndMultiples (map[string](*SinglesAndMultiples))
 	MapOfSinglesOrMultiples  (map[string](*SinglesOrMultiples))
-
-	VersionFinderFunction func(name_sliced SlicedName) (*Slice, bool)
-
-	VersionSplitterFunction func(
-		name_sliced SlicedName,
-		most_possible_version Slice,
-	) *versionorstatus.ParsedVersion
-
-	VersionsSelectorFunction func(tarballbasename string) (
-		VersionFinderFunction,
-		VersionSplitterFunction,
-	)
 )
 
 // TODO: need to find better solution, or write separate module for
@@ -447,7 +435,7 @@ func ParseEx(
 		most_possible_version *Slice
 		found                 bool = false
 
-		version_splitted *versionorstatus.ParsedVersion
+		version_splitted *versionorstatus.ParsedVersionOrStatus
 
 		name_sliced []string
 
@@ -517,21 +505,12 @@ func ParseEx(
 
 	ret.Version = version_splitted
 
-	ret.Status = new(versionorstatus.ParsedStatus)
+	{
+		dirty_arr := name_sliced[most_possible_version[1]:]
 
-	ret.Status.DirtyArr = name_sliced[most_possible_version[1]:]
-
-	ret.Status.DirtyArr = StripList(ret.Status.DirtyArr, STATUS_DELIMITERS)
-
-	ret.Status.Arr = append(ret.Status.Arr[:0], ret.Status.DirtyArr...)
-
-	ret.Status.Arr = RemoveItemsList(ret.Status.Arr, STATUS_DELIMITERS)
-
-	ret.Status.Arr = StripList(ret.Status.Arr, STATUS_DELIMITERS)
-
-	ret.Status.Str = strings.Join(ret.Status.Arr, ".")
-
-	ret.Status.DirtyStr = strings.Join(ret.Status.DirtyArr, "")
+		ret.Status =
+			versionorstatus.NewParsedVersionOrStatusFromStringSlice(dirty_arr, "")
+	}
 
 	return ret, nil
 }

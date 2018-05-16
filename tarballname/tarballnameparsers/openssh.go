@@ -22,11 +22,12 @@ func (self *TarballNameParser_OpenSSH) Render(value *tarballname.ParsedTarballNa
 		name = value.Name + "-"
 	}
 	status := ""
-	if value.Status.Str != "" {
-		if len(value.Status.Arr) > 0 {
-			status += strings.ToLower(value.Status.Arr[0]) + value.Status.Arr[1]
-			if len(value.Status.Arr) > 2 {
-				status += "-" + strings.Join(value.Status.Arr[2:], ".")
+	if value.Status.String() != "" {
+		str_arr := value.Status.StrSlice()
+		if len(str_arr) > 0 {
+			status += strings.ToLower(str_arr[0]) + str_arr[1]
+			if len(str_arr) > 2 {
+				status += "-" + strings.Join(str_arr[2:], ".")
 			}
 		}
 	}
@@ -36,5 +37,5 @@ func (self *TarballNameParser_OpenSSH) Render(value *tarballname.ParsedTarballNa
 		ext = value.Extension
 	}
 
-	return fmt.Sprintf("%s%s%s%s", name, value.Version.Str, status, ext), nil
+	return fmt.Sprintf("%s%s%s%s", name, value.Version.String(), status, ext), nil
 }

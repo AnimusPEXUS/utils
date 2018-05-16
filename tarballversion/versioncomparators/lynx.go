@@ -23,12 +23,12 @@ func (self *VersionComparatorLynx) RenderNumericalVersion(
 	[]int, error,
 ) {
 
-	ret, err := tarballbasename.Version.ArrInt()
+	ret, err := tarballbasename.Version.IntSlice()
 	if err != nil {
 		return nil, err
 	}
 
-	len_arr := len(tarballbasename.Status.Arr)
+	len_arr := len(tarballbasename.Status.StrSlice())
 
 	if len_arr == 0 {
 		return ret, nil
@@ -38,7 +38,7 @@ func (self *VersionComparatorLynx) RenderNumericalVersion(
 		return nil, errors.New("unsupported number of status elements")
 	}
 
-	p_num := tarballbasename.Status.Arr[1]
+	p_num := tarballbasename.Status.StrSlice()[1]
 	p_num_i, err := strconv.Atoi(p_num)
 	if err != nil {
 		return nil, err
@@ -87,12 +87,12 @@ func (self *VersionComparatorLynx) _Sort(
 		) (int, error) {
 			pi := &tarballname.ParsedTarballName{
 				Name:    "aaa",
-				Version: versionorstatus.NewParsedVersionFromArrInt(i.([]int)),
+				Version: versionorstatus.NewParsedVersionOrStatusFromIntSlice(i.([]int)),
 			}
 
 			pj := &tarballname.ParsedTarballName{
 				Name:    "aaa",
-				Version: versionorstatus.NewParsedVersionFromArrInt(j.([]int)),
+				Version: versionorstatus.NewParsedVersionOrStatusFromIntSlice(j.([]int)),
 			}
 
 			// TODO: is this check really needed and correct?

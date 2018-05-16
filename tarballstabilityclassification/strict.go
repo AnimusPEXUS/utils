@@ -19,7 +19,7 @@ func (self *ClassifierStrict) Check(parsed *tarballname.ParsedTarballName) (
 	error,
 ) {
 
-	switch parsed.Status.DirtyStr {
+	switch parsed.Status.DirtyString() {
 	default:
 		return types.Development, nil
 	case "":

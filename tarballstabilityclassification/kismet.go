@@ -19,11 +19,11 @@ func (self *ClassifierKismet) Check(parsed *tarballname.ParsedTarballName) (
 	error,
 ) {
 
-	if len(parsed.Status.Arr) == 0 {
+	if len(parsed.Status.StrSlice()) == 0 {
 		return types.Development, nil
 	}
 
-	switch parsed.Status.Arr[0] {
+	switch parsed.Status.StrSlice()[0] {
 	default:
 		return types.Development, nil
 	case "R":

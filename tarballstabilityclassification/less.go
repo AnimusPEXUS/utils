@@ -23,7 +23,7 @@ func (self *ClassifierLess) Check(parsed *tarballname.ParsedTarballName) (
 	for _, i := range []string{
 		"487",
 	} {
-		if parsed.Version.Arr[0] == i {
+		if parsed.Version.StrSlice()[0] == i {
 			return types.Release, nil
 		}
 	}

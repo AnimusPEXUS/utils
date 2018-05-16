@@ -24,9 +24,9 @@ func (self *VersionComparatorOpenSSL) RenderNumericalVersion(
 	[]int, error,
 ) {
 
-	len_arr := len(tarballbasename.Status.Arr)
+	len_arr := len(tarballbasename.Status.StrSlice())
 
-	version_to_add, err := tarballbasename.Version.ArrInt()
+	version_to_add, err := tarballbasename.Version.IntSlice()
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,10 @@ func (self *VersionComparatorOpenSSL) RenderNumericalVersion(
 
 	if len_arr == 1 {
 
-		if ok, err := regexp.MatchString(`^[a-z]{1,3}$`, tarballbasename.Status.Arr[0]); err != nil {
+		if ok, err := regexp.MatchString(
+			`^[a-z]{1,3}$`,
+			tarballbasename.Status.StrSlice()[0],
+		); err != nil {
 			return nil, err
 		} else {
 			if !ok {
@@ -48,7 +51,7 @@ func (self *VersionComparatorOpenSSL) RenderNumericalVersion(
 		letter_versions_int := make([]int, 0)
 
 		{
-			stat_arr0 := tarballbasename.Status.Arr[0]
+			stat_arr0 := tarballbasename.Status.StrSlice()[0]
 			splitted_stat := strings.Split(stat_arr0, "")
 
 			for _, i := range splitted_stat {
@@ -102,12 +105,12 @@ func (self *VersionComparatorOpenSSL) _Sort(
 		) (int, error) {
 			pi := &tarballname.ParsedTarballName{
 				Name:    "aaa",
-				Version: versionorstatus.NewParsedVersionFromArrInt(i.([]int)),
+				Version: versionorstatus.NewParsedVersionOrStatusFromIntSlice(i.([]int)),
 			}
 
 			pj := &tarballname.ParsedTarballName{
 				Name:    "aaa",
-				Version: versionorstatus.NewParsedVersionFromArrInt(j.([]int)),
+				Version: versionorstatus.NewParsedVersionOrStatusFromIntSlice(j.([]int)),
 			}
 
 			// TODO: is this check really needed and correct?

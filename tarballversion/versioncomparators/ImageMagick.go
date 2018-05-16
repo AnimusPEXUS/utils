@@ -23,12 +23,12 @@ func (self *VersionComparatorImageMagick) RenderNumericalVersion(
 	[]int, error,
 ) {
 
-	ret, err := tarballbasename.Version.ArrInt()
+	ret, err := tarballbasename.Version.IntSlice()
 	if err != nil {
 		return nil, err
 	}
 
-	len_arr := len(tarballbasename.Status.Arr)
+	len_arr := len(tarballbasename.Status.StrSlice())
 
 	if !(len_arr == 0 || len_arr == 1) {
 		return nil, errors.New("invalid number of elements in status")
@@ -38,7 +38,7 @@ func (self *VersionComparatorImageMagick) RenderNumericalVersion(
 		return ret, nil
 	}
 
-	p_num := tarballbasename.Status.Arr[0]
+	p_num := tarballbasename.Status.StrSlice()[0]
 	p_num_i, err := strconv.Atoi(p_num)
 	if err != nil {
 		return nil, err
@@ -87,12 +87,12 @@ func (self *VersionComparatorImageMagick) _Sort(
 		) (int, error) {
 			pi := &tarballname.ParsedTarballName{
 				Name:    "aaa",
-				Version: versionorstatus.NewParsedVersionFromArrInt(i.([]int)),
+				Version: versionorstatus.NewParsedVersionOrStatusFromIntSlice(i.([]int)),
 			}
 
 			pj := &tarballname.ParsedTarballName{
 				Name:    "aaa",
-				Version: versionorstatus.NewParsedVersionFromArrInt(j.([]int)),
+				Version: versionorstatus.NewParsedVersionOrStatusFromIntSlice(j.([]int)),
 			}
 
 			// TODO: is this check really needed and correct?

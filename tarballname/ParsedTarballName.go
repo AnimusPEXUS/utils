@@ -9,8 +9,8 @@ import (
 type ParsedTarballName struct {
 	Basename           string
 	Name               string
-	Version            *versionorstatus.ParsedVersion
-	Status             *versionorstatus.ParsedStatus
+	Version            *versionorstatus.ParsedVersionOrStatus
+	Status             *versionorstatus.ParsedVersionOrStatus
 	Extension          string
 	OriginalInputValue string
 }
@@ -40,8 +40,8 @@ func (self *ParsedTarballName) Render(apply_extension bool) string {
 		name = self.Name + "-"
 	}
 	status := ""
-	if self.Status.Str != "" {
-		status = "-" + self.Status.Str
+	if self.Status.String() != "" {
+		status = "-" + self.Status.String()
 	}
 
 	ext := ""
@@ -51,5 +51,5 @@ func (self *ParsedTarballName) Render(apply_extension bool) string {
 		}
 	}
 
-	return fmt.Sprintf("%s%s%s%s", name, self.Version.Str, status, ext)
+	return fmt.Sprintf("%s%s%s%s", name, self.Version.String(), status, ext)
 }

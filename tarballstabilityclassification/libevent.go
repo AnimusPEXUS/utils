@@ -20,11 +20,11 @@ func (self *ClassifierLibEvent) Check(parsed *tarballname.ParsedTarballName) (
 	error,
 ) {
 
-	if len(parsed.Status.Arr) == 0 {
+	if len(parsed.Status.StrSlice()) == 0 {
 		return types.Development, nil
 	}
 
-	switch strings.ToLower(parsed.Status.Arr[0]) {
+	switch strings.ToLower(parsed.Status.StrSlice()[0]) {
 	default:
 		return types.Development, nil
 	case "stable":

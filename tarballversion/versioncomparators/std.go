@@ -19,19 +19,19 @@ func (self *VersionComparatorStd) RenderNumericalVersion(
 ) (
 	[]int, error,
 ) {
-	return tarballbasename.Version.ArrInt()
+	return tarballbasename.Version.IntSlice()
 }
 
 func (self *VersionComparatorStd) Compare(
 	tarballbasename1, tarballbasename2 *tarballname.ParsedTarballName,
 ) (int, error) {
 
-	one, err := tarballbasename1.Version.ArrInt()
+	one, err := tarballbasename1.Version.IntSlice()
 	if err != nil {
 		return -100, err
 	}
 
-	two, err := tarballbasename2.Version.ArrInt()
+	two, err := tarballbasename2.Version.IntSlice()
 	if err != nil {
 		return -100, err
 	}
