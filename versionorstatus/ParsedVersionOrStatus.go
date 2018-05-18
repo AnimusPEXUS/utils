@@ -43,17 +43,31 @@ func (self *ParsedVersionOrStatus) DirtyString() string {
 	return strings.Join(self.values, self.sep)
 }
 
-func (self *ParsedVersionOrStatus) String() string {
-	return strings.Join(self.values, ".")
+func (self *ParsedVersionOrStatus) StrSliceString(sep string) string {
+	return strings.Join(self.values, sep)
+}
+
+func (self *ParsedVersionOrStatus) IntSliceString(sep string) (string, error) {
+	t, err := self.IntSlice()
+	if err != nil {
+		return "", err
+	}
+
+	strs := make([]string, 0)
+
+	for _, i := range t {
+		strs = append(strs, strconv.Itoa(i))
+	}
+	return strings.Join(strs, sep), nil
 }
 
 func (self *ParsedVersionOrStatus) InfoText() string {
-	ret := fmt.Sprintf(`  Values: %v
-  String: "%s"
-  slice:     %v
-  str:       "%s"`,
+
+	ret := fmt.Sprintf(""+
+		`  Values:          %v`+
+		`  StrSliceString: "%s"`,
 		self.StrSlice(),
-		self.String(),
+		self.StrSliceString(" "),
 	)
 
 	return ret

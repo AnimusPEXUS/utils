@@ -21,8 +21,8 @@ func (self *TarballNameParser_OpenSSL) Render(value *tarballname.ParsedTarballNa
 		name = value.Name + "-"
 	}
 	status := ""
-	if value.Status.String() != "" {
-		status = value.Status.String()
+	if value.Status.StrSliceString("") != "" {
+		status = value.Status.StrSliceString("")
 	}
 
 	ext := ""
@@ -30,5 +30,10 @@ func (self *TarballNameParser_OpenSSL) Render(value *tarballname.ParsedTarballNa
 		ext = value.Extension
 	}
 
-	return fmt.Sprintf("%s%s%s%s", name, value.Version.String(), status, ext), nil
+	vstr, err := value.Version.IntSliceString(".")
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%s%s%s%s", name, vstr, status, ext), nil
 }

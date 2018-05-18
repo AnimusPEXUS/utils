@@ -34,14 +34,14 @@ func (self *ParsedTarballName) InfoText() string {
 	return ret
 }
 
-func (self *ParsedTarballName) Render(apply_extension bool) string {
+func (self *ParsedTarballName) Render(apply_extension bool) (string, error) {
 	name := ""
 	if self.Name != "" {
 		name = self.Name + "-"
 	}
 	status := ""
-	if self.Status.String() != "" {
-		status = "-" + self.Status.String()
+	if self.Status.StrSliceString("") != "" {
+		status = "-" + self.Status.StrSliceString("")
 	}
 
 	ext := ""
@@ -51,5 +51,10 @@ func (self *ParsedTarballName) Render(apply_extension bool) string {
 		}
 	}
 
-	return fmt.Sprintf("%s%s%s%s", name, self.Version.String(), status, ext)
+	version_str, err := self.Version.IntSliceString(".")
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%s%s%s%s", name, version_str, status, ext), nil
 }

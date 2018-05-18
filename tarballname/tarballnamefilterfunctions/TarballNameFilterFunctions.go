@@ -67,5 +67,5 @@ func StatusFilterFunction(
 		return false, err
 	}
 
-	return rexp.MatchString(parse_res.Status.String()), nil
+	return rexp.MatchString(parse_res.Status.StrSliceString("")), nil
 }

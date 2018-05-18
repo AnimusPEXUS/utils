@@ -14,5 +14,5 @@ func (self *TarballNameParser_Std) Parse(value string) (
 }
 
 func (self *TarballNameParser_Std) Render(value *tarballname.ParsedTarballName) (string, error) {
-	return value.Render(true), nil
+	return value.Render(true)
 }

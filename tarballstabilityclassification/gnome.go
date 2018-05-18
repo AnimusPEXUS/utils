@@ -22,7 +22,7 @@ func (self *ClassifierGnome) Check(parsed *tarballname.ParsedTarballName) (
 	error,
 ) {
 
-	if parsed.Status.String() != "" {
+	if parsed.Status.StrSliceString("") != "" {
 		return types.Development, nil
 	}
 
