@@ -6,6 +6,10 @@ import (
 	augstrings "github.com/AnimusPEXUS/utils/strings"
 )
 
+// NOTE: this package was made by inertion after using python3 for a long time,
+//       but looks like path package in golang works better than python one,
+//       so looks like this package is going to be deleted
+
 var (
 	S_SEP string = "/"
 	D_SEP string = "//"
