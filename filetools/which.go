@@ -5,6 +5,8 @@ import (
 	"os"
 	"path"
 	"strings"
+
+	"github.com/AnimusPEXUS/utils/environ"
 )
 
 func Which(executable_name string, under []string) (string, error) {
@@ -30,9 +32,10 @@ func Which(executable_name string, under []string) (string, error) {
 		where_to_search = append(where_to_search, under...)
 	} else {
 		splitted_path := []string{}
-		env := os.Environ()
-		PATH, ok := env["PATH"]
-		if !ok {
+
+		env := environ.NewFromStrings(os.Environ())
+		PATH := env.Get("PATH", "")
+		if PATH == "" {
 			return "", errors.New("no PATH environment variable")
 		}
 		splitted_path = strings.Split(PATH, ":")
@@ -67,7 +70,7 @@ func Which(executable_name string, under []string) (string, error) {
 		s, err := os.Stat(p)
 		if err != nil {
 			if !os.IsNotExist(err) {
-				return err
+				return "", err
 			} else {
 				continue
 			}
