@@ -81,6 +81,12 @@ func (self *Set) Add(values ...interface{}) {
 	}
 }
 
+func (self *Set) AddStrings(values ...string) {
+	for _, val := range values {
+		self.Add(val)
+	}
+}
+
 func (self *Set) _Remove(value interface{}) {
 	self._DefineSetType(value)
 	self._VerifySetType(value)
