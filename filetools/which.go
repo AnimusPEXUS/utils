@@ -19,12 +19,15 @@ func Which(executable_name string, under []string) (string, error) {
 			if !strings.HasSuffix(i, "/bin") && !strings.HasSuffix(i, "/sbin") {
 				under_plus = append(under_plus, path.Join(i, "/bin"))
 				under_plus = append(under_plus, path.Join(i, "/sbin"))
+			} else {
+				under_plus = append(under_plus, i)
 			}
 		}
 
+		under = under_plus
+
 		where_to_search = make([]string, 0)
 		where_to_search = append(where_to_search, under...)
-		where_to_search = append(where_to_search, under_plus...)
 	} else {
 		splitted_path := []string{}
 		env := os.Environ()
