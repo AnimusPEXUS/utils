@@ -19,9 +19,6 @@ func (self *ClassifierOpenSSH) Check(parsed *tarballname.ParsedTarballName) (
 	error,
 ) {
 
-	// TODO: regex calibration needed
-	panic("TODO: regex calibration needed")
-
 	if ok, err := regexp.MatchString(`^[Pp]\d+$`, parsed.Status.DirtyString()); err != nil {
 		return types.Development, err
 	} else {

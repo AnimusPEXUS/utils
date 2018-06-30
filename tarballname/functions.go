@@ -508,6 +508,34 @@ func ParseEx(
 	{
 		dirty_arr := name_sliced[most_possible_version[1]:]
 
+		for _, i := range ALL_DELIMITERS {
+			for true {
+				if len(dirty_arr) == 0 {
+					break
+				}
+
+				if dirty_arr[0] == i {
+					dirty_arr = dirty_arr[1:]
+				} else {
+					break
+				}
+			}
+
+			for true {
+				if len(dirty_arr) == 0 {
+					break
+				}
+
+				if dirty_arr[len(dirty_arr)-1] == i {
+					dirty_arr = dirty_arr[:len(dirty_arr)-1]
+				} else {
+					break
+				}
+			}
+		}
+
+		//		fmt.Println("dirty_arr", dirty_arr)
+
 		ret.Status =
 			versionorstatus.NewParsedVersionOrStatusFromStringSlice(dirty_arr, "")
 	}
