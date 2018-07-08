@@ -18,10 +18,10 @@ var (
 	//  openjdk development changed it's tag name formatting.
 
 	// last openjdk tag which used OPENJDK_HG_RE_10 is jdk9-b94
-	OPENJDK_HG_RE_10 = regexp.MustCompile(`^(\w+)(\d+)\-b(\d+)$`)
+	OPENJDK_HG_RE_10 = regexp.MustCompile(`^(\w+)((?:\d+\.?)+)\-b(\d+)$`)
 
 	// first openjdk tag using OPENJDK_HG_RE_20 is jdk-9+95
-	OPENJDK_HG_RE_20 = regexp.MustCompile(`^(\w+)\-(\d+)\+(\d+)$`)
+	OPENJDK_HG_RE_20 = regexp.MustCompile(`^(\w+)\-((?:\d+\.?)+)\+(\d+)$`)
 )
 
 type TarballNameParser_OpenJDK_Mercurial_Tags_Convertor struct {
@@ -33,7 +33,7 @@ func (self *TarballNameParser_OpenJDK_Mercurial_Tags_Convertor) Parse(value stri
 ) {
 	var (
 		name                 string
-		openjdk_main_version int
+		openjdk_main_version *versionorstatus.ParsedVersionOrStatus
 		build_number         int
 	)
 
@@ -47,10 +47,10 @@ func (self *TarballNameParser_OpenJDK_Mercurial_Tags_Convertor) Parse(value stri
 		r := OPENJDK_HG_RE_10.FindStringSubmatch(value)
 		name = r[1]
 
-		openjdk_main_version, err = strconv.Atoi(r[2])
-		if err != nil {
-			return nil, err
-		}
+		openjdk_main_version = versionorstatus.NewParsedVersionOrStatusFromString(
+			r[2],
+			".",
+		)
 
 		build_number, err = strconv.Atoi(r[3])
 		if err != nil {
@@ -62,9 +62,13 @@ func (self *TarballNameParser_OpenJDK_Mercurial_Tags_Convertor) Parse(value stri
 		var err error
 
 		r := OPENJDK_HG_RE_20.FindStringSubmatch(value)
+
 		name = r[1]
 
-		openjdk_main_version, err = strconv.Atoi(r[2])
+		openjdk_main_version = versionorstatus.NewParsedVersionOrStatusFromString(
+			r[2],
+			".",
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -78,17 +82,29 @@ func (self *TarballNameParser_OpenJDK_Mercurial_Tags_Convertor) Parse(value stri
 		return nil, errors.New("couldn't parse OpenJDK tag")
 	}
 
-	ret := new(tarballname.ParsedTarballName)
+	{
+		old_ver, err := openjdk_main_version.IntSlice()
+		if err != nil {
+			return nil, err
+		}
 
-	ver := versionorstatus.NewParsedVersionOrStatusFromIntSlice(
-		[]int{openjdk_main_version, build_number},
-		".",
-	)
+		if len(old_ver) == 1 {
+			old_ver = append(old_ver, []int{0, 0}...)
+		}
+
+		old_ver = append(old_ver, build_number)
+
+		new_ver := versionorstatus.NewParsedVersionOrStatusFromIntSlice(old_ver, ".")
+
+		openjdk_main_version = new_ver
+	}
+
+	ret := new(tarballname.ParsedTarballName)
 
 	sta := versionorstatus.NewParsedVersionOrStatusFromIntSlice([]int{}, ".")
 
 	ret.Name = name
-	ret.Version = ver
+	ret.Version = openjdk_main_version
 	ret.Status = sta
 
 	return ret, nil
