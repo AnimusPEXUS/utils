@@ -30,4 +30,7 @@ var Index = map[string]types.TarballNameParserI{
 	"openssl": &TarballNameParser_OpenSSL{},
 
 	// "slang": &TarballNameParser_Slang{},
+
+	// OpenJDK team isn't smart enough to embrace standard version numbering
+	"openjdk_hg_tags": &TarballNameParser_OpenJDK_Mercurial_Tags_Convertor{},
 }

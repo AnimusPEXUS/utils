@@ -104,13 +104,19 @@ func (self *VersionComparatorKismet) _Sort(
 			j interface{},
 		) (int, error) {
 			pi := &tarballname.ParsedTarballName{
-				Name:    "aaa",
-				Version: versionorstatus.NewParsedVersionOrStatusFromIntSlice(i.([]int)),
+				Name: "aaa",
+				Version: versionorstatus.NewParsedVersionOrStatusFromIntSlice(
+					i.([]int),
+					".",
+				),
 			}
 
 			pj := &tarballname.ParsedTarballName{
-				Name:    "aaa",
-				Version: versionorstatus.NewParsedVersionOrStatusFromIntSlice(j.([]int)),
+				Name: "aaa",
+				Version: versionorstatus.NewParsedVersionOrStatusFromIntSlice(
+					j.([]int),
+					".",
+				),
 			}
 
 			// TODO: is this check really needed and correct?

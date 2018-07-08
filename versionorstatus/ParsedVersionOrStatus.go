@@ -14,7 +14,10 @@ type ParsedVersionOrStatus struct {
 	sep    string
 }
 
-func NewParsedVersionOrStatusFromString(value, sep string) *ParsedVersionOrStatus {
+func NewParsedVersionOrStatusFromString(
+	value string,
+	sep string,
+) *ParsedVersionOrStatus {
 	self := new(ParsedVersionOrStatus)
 	self.values = strings.Split(value, sep)
 	self.sep = sep
@@ -31,11 +34,15 @@ func NewParsedVersionOrStatusFromStringSlice(
 	return self
 }
 
-func NewParsedVersionOrStatusFromIntSlice(value []int) *ParsedVersionOrStatus {
+func NewParsedVersionOrStatusFromIntSlice(
+	value []int,
+	sep string,
+) *ParsedVersionOrStatus {
 	self := new(ParsedVersionOrStatus)
 	for _, i := range value {
 		self.values = append(self.values, strconv.Itoa(i))
 	}
+	self.sep = sep
 	return self
 }
 
