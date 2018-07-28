@@ -131,7 +131,7 @@ func (self *SFNetWalk) ListDirNotCached(pth string) (
 		} else if strings.Contains(cls, "file") {
 			files = append(files, &FileInfo{name: name, isdir: false})
 		} else {
-
+			// ignore
 		}
 
 	}
