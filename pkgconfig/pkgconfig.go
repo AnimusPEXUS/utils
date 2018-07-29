@@ -4,19 +4,28 @@ import (
 	"errors"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 
 	"github.com/AnimusPEXUS/utils/environ"
 	"github.com/AnimusPEXUS/utils/filetools"
+	"github.com/AnimusPEXUS/utils/set"
 )
 
+// TODO: I don't like this.. I already have such list somethere
+var POSSIBLE_LIBDIR_NAMES = []string{"lib", "lib64"}
+
 type PkgConfig struct {
-	executable string
+	executable          string
+	pkg_config_path_env []string
 }
 
-func NewPkgConfig(searchpaths []string) (*PkgConfig, error) {
+func NewPkgConfig(
+	path_env []string,
+	pkg_config_path_env []string,
+) (*PkgConfig, error) {
 
-	if len(searchpaths) == 0 {
+	if len(path_env) == 0 {
 		e := environ.NewFromStrings(os.Environ())
 		p := e.Get("PATH", "")
 
@@ -24,19 +33,77 @@ func NewPkgConfig(searchpaths []string) (*PkgConfig, error) {
 			return nil, errors.New("error determining path to search for pkg-config")
 		}
 
-		searchpaths = strings.Split(p, ":")
+		path_env = strings.Split(p, ":")
 	}
 
-	e, err := filetools.Which("pkg-config", searchpaths)
+	if len(pkg_config_path_env) == 0 {
+		r := make([]string, 0)
+
+		prefixes := make([]string, 0)
+
+		{
+			prefixes_s := set.NewSetString()
+
+			for _, i := range path_env {
+				prefixes_s.AddStrings(path.Base(i))
+			}
+
+			prefixes = prefixes_s.ListStrings()
+		}
+
+		dirs := make([]string, 0)
+		dirs = append(dirs, POSSIBLE_LIBDIR_NAMES...)
+		dirs = append(dirs, "include")
+
+		for _, i := range prefixes {
+			for _, j := range dirs {
+				pth := path.Join(i, j, "pkgconfig")
+				if s, err := os.Stat(pth); err != nil {
+					if !os.IsNotExist(err) {
+						return nil, err
+					} else {
+						continue
+					}
+				} else {
+					if !s.IsDir() {
+						return nil, errors.New(pth + " isn't a directory")
+					}
+				}
+				r = append(r, pth)
+			}
+		}
+
+		pkg_config_path_env = r
+
+	}
+
+	e, err := filetools.Which("pkg-config", path_env)
 	if err != nil {
 		return nil, err
 	}
 
-	return &PkgConfig{executable: e}, nil
+	ret := &PkgConfig{
+		executable:          e,
+		pkg_config_path_env: pkg_config_path_env,
+	}
+
+	return ret, nil
 }
 
 func (self *PkgConfig) Command(args ...string) *exec.Cmd {
-	return exec.Command(self.executable, args...)
+
+	env := environ.NewFromStrings(os.Environ())
+	env.Set(
+		"PKG_CONFIG_PATH",
+		strings.Join(
+			self.pkg_config_path_env,
+			string(os.PathListSeparator),
+		),
+	)
+
+	c := exec.Command(self.executable, args...)
+	c.Env = env.Strings()
+	return c
 }
 
 func (self *PkgConfig) getArgsWithPrefixes(pkg_config_args []string, prefix string) ([]string, error) {
