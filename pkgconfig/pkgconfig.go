@@ -53,7 +53,7 @@ func NewPkgConfig(
 
 		dirs := make([]string, 0)
 		dirs = append(dirs, POSSIBLE_LIBDIR_NAMES...)
-		dirs = append(dirs, "include")
+		dirs = append(dirs, "share")
 
 		for _, i := range prefixes {
 			for _, j := range dirs {
