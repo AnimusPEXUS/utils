@@ -34,6 +34,15 @@ func (self *ClassifierStd) Check(parsed *tarballname.ParsedTarballName) (
 	// 	return types.Release, nil
 	// }
 
+	switch parsed.Status.DirtyString() {
+	case "alpha":
+		return types.Alpha, nil
+	case "beta":
+		return types.Beta, nil
+	case "dev":
+		return types.Development, nil
+	}
+
 	return types.Release, nil
 }
 
