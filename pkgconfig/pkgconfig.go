@@ -26,6 +26,7 @@ func NewPkgConfig(
 ) (*PkgConfig, error) {
 
 	if len(path_env) == 0 {
+
 		e := environ.NewFromStrings(os.Environ())
 		p := e.Get("PATH", "")
 
@@ -45,7 +46,7 @@ func NewPkgConfig(
 			prefixes_s := set.NewSetString()
 
 			for _, i := range path_env {
-				prefixes_s.AddStrings(path.Base(i))
+				prefixes_s.AddStrings(path.Dir(i))
 			}
 
 			prefixes = prefixes_s.ListStrings()
@@ -61,9 +62,10 @@ func NewPkgConfig(
 				if s, err := os.Stat(pth); err != nil {
 					if !os.IsNotExist(err) {
 						return nil, err
-					} else {
-						continue
 					}
+
+					continue
+
 				} else {
 					if !s.IsDir() {
 						return nil, errors.New(pth + " isn't a directory")
@@ -90,20 +92,43 @@ func NewPkgConfig(
 	return ret, nil
 }
 
+func (self *PkgConfig) GetPKG_CONFIG_PATH() string {
+	return strings.Join(
+		self.pkg_config_path_env,
+		string(os.PathListSeparator),
+	)
+}
+
 func (self *PkgConfig) Command(args ...string) *exec.Cmd {
 
 	env := environ.NewFromStrings(os.Environ())
-	env.Set(
-		"PKG_CONFIG_PATH",
-		strings.Join(
-			self.pkg_config_path_env,
-			string(os.PathListSeparator),
-		),
-	)
+	{
+		PKG_CONFIG_PATH := self.GetPKG_CONFIG_PATH()
+		if len(PKG_CONFIG_PATH) != 0 {
+			env.Set(
+				"PKG_CONFIG_PATH",
+				PKG_CONFIG_PATH,
+			)
+		}
+	}
 
 	c := exec.Command(self.executable, args...)
 	c.Env = env.Strings()
 	return c
+}
+
+func (self *PkgConfig) CommandOutput(args ...string) (string, error) {
+
+	cmd := self.Command(args...)
+
+	data, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+
+	ret := string(data)
+
+	return ret, nil
 }
 
 func (self *PkgConfig) getArgsWithPrefixes(pkg_config_args []string, prefix string) ([]string, error) {
