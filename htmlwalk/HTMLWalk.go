@@ -75,12 +75,12 @@ func (self *HTMLWalk) ListDirNotCached(pth string) (
 	error,
 ) {
 
-	pth = path.Clean(pth)
+	//	pth = path.Clean(pth)
 
 	u := &url.URL{
 		Scheme: self.scheme,
 		Host:   self.host,
-		Path:   pth,
+		Path:   pth + "/",
 	}
 
 	// c := new(http.Client)
@@ -99,6 +99,8 @@ func (self *HTMLWalk) ListDirNotCached(pth string) (
 	// if err != nil {
 	// 	return nil, nil, err
 	// }
+
+	//	self.LogI("url " + u.String())
 
 	r, err := http.Get(u.String())
 	if err != nil {
@@ -129,20 +131,40 @@ searching:
 		for _, j := range i.Attr {
 			if j.Key == "href" {
 
-				if u, err := url.Parse(j.Val); err == nil && (u.Host != "" ||
+				j_val := j.Val
+
+				if u, err := url.Parse(j_val); err == nil && (u.Host != "" ||
 					u.Scheme != "" ||
 					u.RawQuery != "") {
 					continue searching
 				}
 
-				for _, i := range []string{"/", "#"} {
-					if strings.HasPrefix(j.Val, i) {
-						continue searching
+				is_dir := strings.HasSuffix(j_val, "/")
+
+				if strings.HasPrefix(j_val, "#") {
+					continue searching
+				}
+
+				if strings.HasPrefix(j_val, "/") {
+
+					if is_dir {
+						j_val = path.Dir(j_val)
 					}
+
+					if path.Dir(j_val) != path.Clean(pth) {
+						continue
+					}
+
+					j_val = path.Base(j_val)
+
+					if is_dir {
+						j_val += "/"
+					}
+
 				}
 
 				{
-					c := path.Clean(j.Val)
+					c := path.Clean(j_val)
 					for _, i := range []string{".", "..", ""} {
 						if c == i {
 							continue searching
@@ -151,7 +173,7 @@ searching:
 				}
 
 				// ue, err := url.PathUnescape(i.Data)
-				ue, err := url.PathUnescape(j.Val)
+				ue, err := url.PathUnescape(j_val)
 				if err != nil {
 					continue searching
 				}
