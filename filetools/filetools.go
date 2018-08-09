@@ -292,11 +292,27 @@ func CopyTree(
 	return nil
 }
 
-func CopyWithInfo(src, dst string, log logger.LoggerI) error {
+func CopyWithOptions(
+	src string,
+	dst string,
+	log logger.LoggerI,
+	copyinfo bool,
+	dereference_symlinks bool,
+) error {
 
-	src_stat, err := os.Lstat(src)
-	if err != nil {
-		return err
+	var src_stat os.FileInfo
+	var err error
+
+	if !dereference_symlinks {
+		src_stat, err = os.Lstat(src)
+		if err != nil {
+			return err
+		}
+	} else {
+		src_stat, err = os.Stat(src)
+		if err != nil {
+			return err
+		}
 	}
 
 	if Is(src_stat.Mode()).Symlink() {
@@ -332,24 +348,30 @@ func CopyWithInfo(src, dst string, log logger.LoggerI) error {
 			return err
 		}
 
-		sfs, err := os.Stat(src)
-		if err != nil {
-			return err
-		}
+		if copyinfo {
+			sfs, err := os.Stat(src)
+			if err != nil {
+				return err
+			}
 
-		err = os.Chmod(dst, sfs.Mode())
-		if err != nil {
-			return err
-		}
+			err = os.Chmod(dst, sfs.Mode())
+			if err != nil {
+				return err
+			}
 
-		err = os.Chtimes(dst, sfs.ModTime(), sfs.ModTime())
-		if err != nil {
-			return err
+			err = os.Chtimes(dst, sfs.ModTime(), sfs.ModTime())
+			if err != nil {
+				return err
+			}
 		}
 
 	}
 
 	return nil
+}
+
+func CopyWithInfo(src, dst string, log logger.LoggerI) error {
+	return CopyWithOptions(src, dst, log, true, false)
 }
 
 type Is os.FileMode
