@@ -121,6 +121,8 @@ func (self *PkgConfig) CommandOutput(args ...string) (string, error) {
 
 	cmd := self.Command(args...)
 
+	cmd.Stderr = os.Stderr
+
 	data, err := cmd.Output()
 	if err != nil {
 		return "", err
