@@ -17,19 +17,22 @@ import (
 type VersionTree struct {
 	d *directory.File
 
-	tarball_name_regexp string
-	tarball_name_parser types.TarballNameParserI
-	comparator          types2.VersionComparatorI
+	tarball_name           string
+	tarball_name_is_regexp bool
+	tarball_name_parser    types.TarballNameParserI
+	comparator             types2.VersionComparatorI
 }
 
 func NewVersionTree(
-	tarball_name_regexp string,
+	tarball_name string,
+	tarball_name_is_regexp bool,
 	tarball_name_parser types.TarballNameParserI,
 	comparator types2.VersionComparatorI,
 ) (*VersionTree, error) {
 	ret := new(VersionTree)
 
-	ret.tarball_name_regexp = tarball_name_regexp
+	ret.tarball_name = tarball_name
+	ret.tarball_name_is_regexp = tarball_name_is_regexp
 	ret.tarball_name_parser = tarball_name_parser
 	ret.comparator = comparator
 
@@ -58,12 +61,21 @@ func (self *VersionTree) Add(basename string) error {
 		return err
 	}
 
-	if m, err := regexp.MatchString(self.tarball_name_regexp, res.Name); err != nil {
-		return err
-	} else {
-		if !m {
-			return errors.New("tarball name dismatch")
+	var match bool
+
+	if self.tarball_name_is_regexp {
+
+		if m, err := regexp.MatchString(self.tarball_name, res.Name); err != nil {
+			return err
+		} else {
+			match = m
 		}
+	} else {
+		match = self.tarball_name == res.Name
+	}
+
+	if !match {
+		return errors.New("tarball name dismatch")
 	}
 
 	version_list, err := self.comparator.RenderNumericalVersion(res)

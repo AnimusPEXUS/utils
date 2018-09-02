@@ -2,6 +2,8 @@ package archive
 
 import "strings"
 
+// TODO: I don't like this package. now it is somewhat bogus
+
 func DetermineCompressorByFilename(file_name string) (bool, string) {
 
 	if strings.HasSuffix(file_name, ".lzma") {

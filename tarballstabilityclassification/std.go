@@ -1,6 +1,8 @@
 package tarballstabilityclassification
 
 import (
+	"strings"
+
 	"github.com/AnimusPEXUS/utils/tarballname"
 	"github.com/AnimusPEXUS/utils/tarballstabilityclassification/types"
 )
@@ -41,6 +43,10 @@ func (self *ClassifierStd) Check(parsed *tarballname.ParsedTarballName) (
 		return types.Beta, nil
 	case "dev":
 		return types.Development, nil
+	}
+
+	if strings.HasPrefix(parsed.Status.DirtyString(), "rc") {
+		return types.RC, nil
 	}
 
 	return types.Release, nil

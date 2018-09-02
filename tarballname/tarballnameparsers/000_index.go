@@ -33,4 +33,6 @@ var Index = map[string]types.TarballNameParserI{
 
 	// OpenJDK team isn't smart enough to embrace standard version numbering
 	"openjdk_hg_tags": &TarballNameParser_OpenJDK_Mercurial_Tags_Convertor{},
+
+	"freeimage": &TarballNameParser_FreeImage{},
 }
