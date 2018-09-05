@@ -17,7 +17,7 @@ func init() {
 	TarballNameFilterFunctions = make(textlist.FilterFunctions)
 
 	TarballNameFilterFunctions["basename-re"] = BasenameReFilterFunction
-	TarballNameFilterFunctions["tarball-status-re"] = StatusFilterFunction
+	TarballNameFilterFunctions["status-re"] = StatusFilterFunction
 
 }
 

@@ -163,132 +163,227 @@ func CopyTree(
 	files_already_exists_is_error bool,
 	overwrite_existing_files bool,
 	log logger.LoggerI,
+	verbose_log bool,
+	pass_log bool,
 	copy_file_cb func(src, dst string, log logger.LoggerI) error,
 ) error {
 
-	// TODO: add more logging messages to 'log' parameter
-
-	dst_path_stat, err := os.Stat(dst_path)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			// some other error: we can't (and shouldn't) handle it here
-			return err
+	logi := func(t string, for_verbose_mode bool) {
+		if !verbose_log && !for_verbose_mode {
+			return
 		}
+		if log != nil {
+			log.Info(t)
+		}
+	}
+
+	loge := func(t interface{}, for_verbose_mode bool) {
+		if !verbose_log && !for_verbose_mode {
+			return
+		}
+		if log != nil {
+			log.Error(t)
+		}
+	}
+
+	src_path_stat, err := os.Lstat(src_path)
+	if err != nil {
+		loge(err, false)
+		return err
+	}
+
+	if Is(src_path_stat.Mode()).Symlink() || (!src_path_stat.IsDir()) {
+
+		logi("copying file or symlink "+src_path+" as "+dst_path, false)
+
+		dst_exists := false
+
+		dst_path_stat, err := os.Stat(dst_path)
+		if err != nil {
+			if !os.IsNotExist(err) {
+				loge(err, false)
+				return err
+			}
+		} else {
+			dst_exists = true
+		}
+
+		if dst_exists {
+
+			if files_already_exists_is_error {
+				err = errors.New("dst file already exists")
+				loge(err, false)
+				return err
+			}
+
+			if overwrite_existing_files {
+				logi("removing destination before overwritting", true)
+				err = os.RemoveAll(dst_path)
+				if err != nil {
+					loge(err, false)
+					return err
+				}
+			} else {
+				logi("existing destination should not be overwritten", true)
+				if dst_path_stat.IsDir() {
+					err = errors.New("dst is dir and src is not dir")
+					loge(err, false)
+					return err
+				}
+				return nil
+			}
+		}
+
+		{
+			var l logger.LoggerI
+			if pass_log {
+				l = log
+			}
+			os.MkdirAll(path.Dir(dst_path), 0700)
+			err = copy_file_cb(src_path, dst_path, l)
+			if err != nil {
+				loge(err, false)
+				return err
+			}
+		}
+
 	} else {
 
-		if !dst_path_stat.IsDir() {
-			return errors.New("destination exists but it's not directory")
+		logi("copying directory "+src_path+" as "+dst_path, false)
+
+		dst_path_stat, err := os.Stat(dst_path)
+		if err != nil {
+			if !os.IsNotExist(err) {
+				// some other error: we can't (and shouldn't) handle it here
+				loge(err, false)
+				return err
+			}
+		} else {
+
+			if !dst_path_stat.IsDir() {
+				err = errors.New("destination exists but it's not directory")
+				loge(err, false)
+				return err
+			}
+
+			// if dst already exists, we should decide what to do if it's not empty
+
+			dst_dir_lst, err := ioutil.ReadDir(dst_path)
+			if err != nil {
+				loge(err, false)
+				return err
+			}
+
+			if len(dst_dir_lst) != 0 {
+				if dst_not_empty_is_error {
+					err = errors.New("destination directory is not empty")
+					loge(err, false)
+					return err
+				}
+
+				if clear_dst_dir {
+
+					for _, i := range dst_dir_lst {
+						i_joined := path.Join(dst_path, i.Name())
+						if i.IsDir() {
+							err = os.RemoveAll(i_joined)
+							if err != nil {
+								loge(err, false)
+								return err
+							}
+						} else {
+							err = os.Remove(i_joined)
+							if err != nil {
+								loge(err, false)
+								return err
+							}
+						}
+					}
+				}
+			}
 		}
 
-		// if dst already exists, we should decide what to do if it's not empty
-
-		dst_dir_lst, err := ioutil.ReadDir(dst_path)
+		logi("making "+dst_path, true)
+		err = os.MkdirAll(dst_path, 0700)
 		if err != nil {
 			return err
 		}
 
-		if len(dst_dir_lst) != 0 {
-			if dst_not_empty_is_error {
-				return errors.New("destination directory is not empty")
-			}
+		err = Walk(
+			src_path,
+			func(
+				dir string,
+				dirs []os.FileInfo,
+				files []os.FileInfo,
+			) error {
+				logi("working inside "+dir, true)
 
-			if clear_dst_dir {
-
-				for _, i := range dst_dir_lst {
-					i_joined := path.Join(dst_path, i.Name())
-					if i.IsDir() {
-						err = os.RemoveAll(i_joined)
-						if err != nil {
-							return err
-						}
-					} else {
-						err = os.Remove(i_joined)
-						if err != nil {
-							return err
-						}
-					}
-				}
-
-			}
-
-		}
-
-	}
-
-	err = os.MkdirAll(dst_path, 0700)
-	if err != nil {
-		return err
-	}
-
-	err = Walk(
-		src_path,
-		func(
-			dir string,
-			dirs []os.FileInfo,
-			files []os.FileInfo,
-		) error {
-			dir_rel_part, err := filepath.Rel(src_path, dir)
-			if err != nil {
-				return err
-			}
-
-			dst_path := path.Join(dst_path, dir_rel_part)
-
-			err = os.MkdirAll(dst_path, 0700)
-			if err != nil {
-				return err
-			}
-
-			for _, i := range files {
-				src_file_path := path.Join(dir, i.Name())
-				dst_file_path := path.Join(dst_path, i.Name())
-
-				dst_file_path_stat, err := os.Lstat(dst_file_path)
-				dst_file_path_exists := false
+				dir_rel_part, err := filepath.Rel(src_path, dir)
 				if err != nil {
-					if !os.IsNotExist(err) {
-						return err
-					} else {
-						dst_file_path_exists = false
-					}
-				} else {
-					dst_file_path_exists = true
+					loge(err, false)
+					return err
 				}
 
-				if dst_file_path_exists {
-					if dst_file_path_stat.IsDir() {
-						if log != nil {
-							log.Error(
-								"destination file already exists and it is directory " +
-									dst_file_path,
-							)
-						}
-						return errors.New(
-							"destination file already exists and it is directory",
-						)
-					}
-					if files_already_exists_is_error {
-						if log != nil {
-							log.Error("destination file already exists " + dst_file_path)
-						}
-						return errors.New("destination file already exists")
-					}
+				dst_path := path.Join(dst_path, dir_rel_part)
+
+				err = os.MkdirAll(dst_path, 0700)
+				if err != nil {
+					loge(err, false)
+					return err
 				}
 
-				if !dst_file_path_exists || (dst_file_path_exists && overwrite_existing_files) {
-					err = copy_file_cb(src_file_path, dst_file_path, log)
+				for _, i := range files {
+
+					src_file_path := path.Join(dir, i.Name())
+					dst_file_path := path.Join(dst_path, i.Name())
+
+					dst_file_path_exists := false
+					dst_file_path_stat, err := os.Lstat(dst_file_path)
 					if err != nil {
-						return err
+						if !os.IsNotExist(err) {
+							loge(err, false)
+							return err
+						} else {
+							dst_file_path_exists = false
+						}
+					} else {
+						dst_file_path_exists = true
+					}
+
+					if dst_file_path_exists {
+						if dst_file_path_stat.IsDir() {
+							err = errors.New("destination file already exists and it is directory " + dst_file_path)
+							loge(err, false)
+							return err
+						}
+						if files_already_exists_is_error {
+							err = errors.New("destination file already exists")
+							loge(err, false)
+							return err
+						}
+					}
+
+					if !dst_file_path_exists || (dst_file_path_exists && overwrite_existing_files) {
+
+						var l logger.LoggerI
+						if pass_log {
+							l = log
+						}
+
+						err = copy_file_cb(src_file_path, dst_file_path, l)
+						if err != nil {
+							loge(err, false)
+							return err
+						}
 					}
 				}
-			}
-			return nil
-		},
-	)
-	if err != nil {
-		return err
+				return nil
+			},
+		)
+		if err != nil {
+			return err
+		}
 	}
-
 	return nil
 }
 
@@ -378,4 +473,8 @@ type Is os.FileMode
 
 func (self Is) Symlink() bool {
 	return (os.FileMode(self) & os.ModeSymlink) != 0
+}
+
+func (self Is) Regular() bool {
+	return os.FileMode(self).IsRegular()
 }
