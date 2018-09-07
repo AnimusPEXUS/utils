@@ -432,6 +432,11 @@ func CopyWithOptions(
 		}
 		defer sf.Close()
 
+		err = os.Remove(dst)
+		if err != nil {
+			return err
+		}
+
 		df, err := os.Create(dst)
 		if err != nil {
 			return err
