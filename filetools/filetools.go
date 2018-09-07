@@ -434,7 +434,9 @@ func CopyWithOptions(
 
 		err = os.Remove(dst)
 		if err != nil {
-			return err
+			if !os.IsNotExist(err) {
+				return err
+			}
 		}
 
 		df, err := os.Create(dst)
