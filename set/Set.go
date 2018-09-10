@@ -1,6 +1,9 @@
 package set
 
-import "reflect"
+import (
+	"reflect"
+	"sort"
+)
 
 type Set struct {
 	storage []interface{}
@@ -134,6 +137,12 @@ func (self *Set) ListStrings() []string {
 	for _, val := range self.storage {
 		ret = append(ret, val.(string))
 	}
+	return ret
+}
+
+func (self *Set) ListStringsSorted() []string {
+	ret := self.ListStrings()
+	sort.Strings(ret)
 	return ret
 }
 
