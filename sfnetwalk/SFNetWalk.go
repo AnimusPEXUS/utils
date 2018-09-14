@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -26,17 +27,25 @@ type SFNetWalk struct {
 	project string
 	cache   *cache01.CacheDir
 	log     *logger.Logger
+
+	exclude_paths []string
+	maxdepth      int
 }
 
 func NewSFNetWalk(
 	project string,
 	cache *cache01.CacheDir,
 	log *logger.Logger,
+	exclude_paths []string,
+	maxdepth int,
 ) (*SFNetWalk, error) {
 	self := new(SFNetWalk)
 	self.project = project
 	self.cache = cache
 	self.log = log
+
+	self.exclude_paths = exclude_paths
+	self.maxdepth = maxdepth
 
 	return self, nil
 }
@@ -236,6 +245,20 @@ func (self *SFNetWalk) Walk(
 		files []os.FileInfo,
 	) error,
 ) error {
+	return self._Walk(pth, target, self.maxdepth)
+}
+
+func (self *SFNetWalk) _Walk(
+	pth string,
+	target func(
+		dir string,
+		dirs []os.FileInfo,
+		files []os.FileInfo,
+	) error,
+	maxdepth int,
+) error {
+
+	maxdepth--
 
 	dirs, files, err := self.ListDir(pth)
 	if err != nil {
@@ -249,9 +272,28 @@ func (self *SFNetWalk) Walk(
 
 	for _, i := range dirs {
 		j := path.Join(pth, i.Name())
-		err = self.Walk(j, target)
-		if err != nil {
-			return err
+
+		found := false
+		for _, k := range self.exclude_paths {
+			m, err := regexp.MatchString(k, j)
+			if err != nil {
+				return err
+			}
+			if m {
+				found = true
+				break
+			}
+		}
+		if !found {
+
+			if self.maxdepth < 0 || maxdepth > 0 {
+
+				err = self._Walk(j, target, maxdepth)
+				if err != nil {
+					return err
+				}
+
+			}
 		}
 	}
 

@@ -340,8 +340,6 @@ func (self *HTMLWalk) _Walk(
 		}
 		if !found {
 
-			// fmt.Println("len(strings.Split(j, \"/\"))", len(strings.Split(j, "/")))
-
 			if self.maxdepth < 0 || maxdepth > 0 {
 				err = self._Walk(j, target, maxdepth)
 				if err != nil {
@@ -349,8 +347,6 @@ func (self *HTMLWalk) _Walk(
 				}
 			}
 
-			// if self.maxdepth < 0 || (self.maxdepth > -1 && len(strings.Split(j, "/")) < self.maxdepth) {
-			// }
 		}
 	}
 
