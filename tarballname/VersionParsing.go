@@ -63,11 +63,15 @@ func InfoZipVersionSplitter(
 	most_possible_version Slice,
 ) *versionorstatus.ParsedVersionOrStatus {
 
-	name_sliced1 := name_sliced[1]
+	var ret *versionorstatus.ParsedVersionOrStatus = nil
 
-	values := []string{name_sliced1[:1], name_sliced1[1:]}
-
-	ret := versionorstatus.NewParsedVersionOrStatusFromStringSlice(values, "")
+	if len(name_sliced) != 0 {
+		name_sliced1 := name_sliced[1]
+		values := []string{name_sliced1[:1], name_sliced1[1:]}
+		ret = versionorstatus.NewParsedVersionOrStatusFromStringSlice(values, "")
+	} else {
+		ret = versionorstatus.NewParsedVersionOrStatusFromStringSlice([]string{}, "")
+	}
 
 	return ret
 }
