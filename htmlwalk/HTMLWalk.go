@@ -141,6 +141,13 @@ searching:
 
 				is_dir := strings.HasSuffix(j_val, "/")
 
+				if !is_dir && i.FirstChild != nil {
+					if j_val+"/" == i.FirstChild.Data {
+						is_dir = true
+						j_val += "/"
+					}
+				}
+
 				if strings.HasPrefix(j_val, "#") {
 					continue searching
 				}
