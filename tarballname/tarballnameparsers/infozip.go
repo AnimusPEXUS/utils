@@ -12,7 +12,6 @@ func (self *TarballNameParser_InfoZip) Parse(value string) (
 	*tarballname.ParsedTarballName,
 	error,
 ) {
-
 	return tarballname.ParseInfoZip(value)
 }
 

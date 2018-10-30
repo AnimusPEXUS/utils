@@ -20,6 +20,7 @@ type VersionTree struct {
 	tarball_name           string
 	tarball_name_is_regexp bool
 	tarball_name_parser    types.TarballNameParserI
+	not_filenames          bool
 	comparator             types2.VersionComparatorI
 }
 
@@ -27,6 +28,7 @@ func NewVersionTree(
 	tarball_name string,
 	tarball_name_is_regexp bool,
 	tarball_name_parser types.TarballNameParserI,
+	not_filenames bool,
 	comparator types2.VersionComparatorI,
 ) (*VersionTree, error) {
 	ret := new(VersionTree)
@@ -34,6 +36,7 @@ func NewVersionTree(
 	ret.tarball_name = tarball_name
 	ret.tarball_name_is_regexp = tarball_name_is_regexp
 	ret.tarball_name_parser = tarball_name_parser
+	ret.not_filenames = not_filenames
 	ret.comparator = comparator
 
 	// if t, err := tarballnameparsers.Get(tarball_name_parser); err != nil {
@@ -54,7 +57,9 @@ func NewVersionTree(
 
 func (self *VersionTree) Add(basename string) error {
 
-	basename = path.Base(basename)
+	if !self.not_filenames {
+		basename = path.Base(basename)
+	}
 
 	res, err := self.tarball_name_parser.Parse(basename)
 	if err != nil {

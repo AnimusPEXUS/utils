@@ -42,6 +42,7 @@ func (self *TarballNameParser_OpenJDK_Mercurial_Tags_Convertor) Parse(value stri
 	//       some new strange format.
 
 	if OPENJDK_HG_RE_10.MatchString(value) {
+
 		var err error
 
 		r := OPENJDK_HG_RE_10.FindStringSubmatch(value)

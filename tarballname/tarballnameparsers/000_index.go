@@ -35,4 +35,6 @@ var Index = map[string]types.TarballNameParserI{
 	"openjdk_hg_tags": &TarballNameParser_OpenJDK_Mercurial_Tags_Convertor{},
 
 	"freeimage": &TarballNameParser_FreeImage{},
+
+	"release/version": &TarballNameParser_ReleaseVersion{},
 }
