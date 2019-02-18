@@ -2,6 +2,7 @@ package metafilter
 
 import (
 	"errors"
+	"reflect"
 	"regexp"
 	"strings"
 
@@ -12,13 +13,14 @@ import (
 create functions for FilterList().
 parameter - parameter defined in filter and passed to function
 value_to_match - value which function have to check
-data - can be user to pass some additional data to functions
 */
-type FilterFunctions map[string]func(
+
+type FilterFunction func(
 	parameter string,
 	value_to_match interface{},
-	// data map[string]interface{},
 ) (bool, error)
+
+type FilterFunctions map[string]FilterFunction
 
 type Filters []*FilterItem
 
@@ -95,25 +97,78 @@ func ParseFilterTextLines(text []string) (Filters, error) {
 	return ret, nil
 }
 
-// Filters subject date passed by in_list, with filter set passed by filters.
-// functions should contain functions asked by filters.
-// data - additional data to pass to functions
-func FilterList(
-	in_list []interface{},
+func FilterListItem(
+	item interface{},
 	filters Filters,
 	functions FilterFunctions,
 	prefilled bool,
-	// data map[string]interface{},
+	check_filters bool,
 ) (
-	[]string,
+	remove bool,
+	err error,
+) {
+	if check_filters {
+		for _, i := range filters {
+			if _, ok := functions[i.Func]; !ok {
+				err = errors.New("requested function not found: " + i.Func)
+				return
+			}
+		}
+	}
+
+	remove = !prefilled
+
+	for _, filter := range filters {
+		funct, ok := functions[filter.Func]
+
+		if !ok {
+			err = errors.New("function with this name not found")
+			return
+		}
+
+		matched, err := funct(filter.FuncParam, item)
+		if err != nil {
+			return false, err
+		}
+
+		if filter.NotFunc {
+			matched = !matched
+		}
+
+		if matched {
+			remove = !filter.Add
+		}
+
+	}
+
+	return false, nil
+}
+
+// Filters subject date passed by in_objects, with filter set passed by filters.
+// functions should contain functions asked by filters.
+func FilterList(
+	in_objects interface{},
+	filters Filters,
+	functions FilterFunctions,
+	prefilled bool,
+	eqcheckfunc set2.EQCheckFunc,
+) (
+	interface{},
 	error,
 ) {
 
-	out_list := set2.NewSet()
+	out_objects := set2.NewSet()
+	out_objects.SetEQCheckFunc(eqcheckfunc)
+
+	in_objects_v := reflect.ValueOf(in_objects)
 
 	if prefilled {
-		for _, i := range in_list {
-			out_list.Add(i)
+		if in_objects_v.Kind() != reflect.Slice {
+			return nil, errors.New("in_objects_v must be slice")
+		}
+
+		for i := 0; i != in_objects_v.Len(); i++ {
+			out_objects.Add(in_objects_v.Index(i).Interface())
 		}
 	}
 
@@ -123,37 +178,22 @@ func FilterList(
 		}
 	}
 
-	for _, filter := range filters {
-		funct, ok := functions[filter.Func]
+	for i := 0; i != in_objects_v.Len(); i++ {
 
-		if !ok {
-			return nil, errors.New("function with this name not found")
+		item := in_objects_v.Index(i).Interface()
+
+		remove, err := FilterListItem(item, filters, functions, prefilled, false)
+		if err != nil {
+			return nil, err
 		}
 
-		for _, line := range in_list {
-			matched, err := funct(
-				filter.FuncParam,
-				line,
-				// data,
-			)
-			if err != nil {
-				return nil, err
-			}
-
-			if filter.NotFunc {
-				matched = !matched
-			}
-
-			if matched {
-				if filter.Add {
-					out_list.Add(line)
-				} else {
-					out_list.Remove(line)
-				}
-			}
+		if remove {
+			out_objects.Remove(item)
+		} else {
+			out_objects.Add(item)
 		}
 
 	}
 
-	return out_list.ListStrings(), nil
+	return out_objects.List(), nil
 }

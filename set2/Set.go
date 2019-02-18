@@ -18,11 +18,13 @@ func StringsEQFunc(i0, i1 interface{}) (bool, error) {
 	return i0.(string) == i1.(string), nil
 }
 
+type EQCheckFunc func(i0, i1 interface{}) (bool, error)
+
 type Set struct {
 	storage []interface{}
 	t       reflect.Type
 
-	fIsEQCheckFunc func(i0, i1 interface{}) (bool, error)
+	fIsEQCheckFunc EQCheckFunc
 }
 
 func NewSet(values ...interface{}) *Set {
@@ -51,6 +53,10 @@ func NewSetInt() *Set {
 	ret := new(Set)
 	ret.t = reflect.TypeOf(0)
 	return ret
+}
+
+func (self *Set) SetEQCheckFunc(f EQCheckFunc) {
+	self.fIsEQCheckFunc = f
 }
 
 // func (self *Set) Storage() []interface{} {
