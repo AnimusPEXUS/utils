@@ -1,27 +1,23 @@
-package textlist
+package metafilter
 
 import (
 	"errors"
 	"regexp"
 	"strings"
 
-	"github.com/AnimusPEXUS/utils/set"
+	"github.com/AnimusPEXUS/utils/set2"
 )
-
-// TODO: use metafilter
 
 /*
 create functions for FilterList().
 parameter - parameter defined in filter and passed to function
-case_sensitive - if function must take case into account
 value_to_match - value which function have to check
 data - can be user to pass some additional data to functions
 */
 type FilterFunctions map[string]func(
 	parameter string,
-	case_sensitive bool,
-	value_to_match string,
-	data map[string]interface{},
+	value_to_match interface{},
+	// data map[string]interface{},
 ) (bool, error)
 
 type Filters []*FilterItem
@@ -39,9 +35,6 @@ type FilterItem struct {
 
 	// name of function, which FilterList have to use
 	Func string
-
-	// if function have to be case sensetive
-	CaseSensitive bool
 
 	// some functioning data, to be passed to function
 	FuncParam string
@@ -95,11 +88,6 @@ func ParseFilterTextLines(text []string) (Filters, error) {
 			new_item.Func = new_item.Func[1:]
 		}
 
-		if strings.HasSuffix(new_item.Func, "!") {
-			new_item.CaseSensitive = true
-			new_item.Func = new_item.Func[:len(new_item.Func)-1]
-		}
-
 		ret = append(ret, new_item)
 
 	}
@@ -107,29 +95,26 @@ func ParseFilterTextLines(text []string) (Filters, error) {
 	return ret, nil
 }
 
-// TODO: im suspecting this is a garbage. commentedout on 25 Dec 2017
-// var StdFunctions = FilterFunctions{}
-// func FilterListStd(in_list []string, filters Filters) ([]string, error) {
-// 	return FilterList(in_list, filters, StdFunctions)
-// }
-
 // Filters subject date passed by in_list, with filter set passed by filters.
 // functions should contain functions asked by filters.
 // data - additional data to pass to functions
 func FilterList(
-	in_list []string,
+	in_list []interface{},
 	filters Filters,
 	functions FilterFunctions,
-	data map[string]interface{},
+	prefilled bool,
+	// data map[string]interface{},
 ) (
 	[]string,
 	error,
 ) {
 
-	out_list := set.NewSetString()
+	out_list := set2.NewSet()
 
-	for _, i := range in_list {
-		out_list.Add(i)
+	if prefilled {
+		for _, i := range in_list {
+			out_list.Add(i)
+		}
 	}
 
 	for _, i := range filters {
@@ -148,9 +133,8 @@ func FilterList(
 		for _, line := range in_list {
 			matched, err := funct(
 				filter.FuncParam,
-				filter.CaseSensitive,
 				line,
-				data,
+				// data,
 			)
 			if err != nil {
 				return nil, err

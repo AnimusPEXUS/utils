@@ -2,104 +2,89 @@ package workerstatus
 
 import "strings"
 
-type WorkerStatus struct {
-	Starting bool
-	Stopping bool
-	Working  bool
-}
+type WorkerStatus uint
 
-func New() *WorkerStatus {
-	ret := new(WorkerStatus)
-	ret.Reset()
-	return ret
-}
+const (
+	Stopped WorkerStatus = iota
+	Starting
+	Working
+	Stopping
+)
 
-func (self *WorkerStatus) Stopped() bool {
+func (self WorkerStatus) Stopped() bool {
 	return self.IsStopped()
 }
 
-func (self *WorkerStatus) IsStopped() bool {
-	return !self.Starting && !self.Stopping && !self.Working
+func (self WorkerStatus) IsStopped() bool {
+	return self == Stopped
 }
 
 func (self *WorkerStatus) Reset() {
-	self.Starting = false
-	self.Stopping = false
-	self.Working = false
+	*self = Stopped
 	return
 }
 
 func (self *WorkerStatus) UpdateSelf(other *WorkerStatus) {
-	self.Starting = other.Starting
-	self.Stopping = other.Stopping
-	self.Working = other.Working
+	*self = *other
 }
 
 func (self *WorkerStatus) UpdateOther(other *WorkerStatus) {
-	other.Starting = self.Starting
-	other.Stopping = self.Stopping
-	other.Working = self.Working
+	*other = *self
 }
 
-func (self *WorkerStatus) String() string {
+func (self WorkerStatus) String() string {
 
-	if self.Starting && self.Stopping {
-		return "invalid: starting and stopping"
+	switch self {
 
-	} else if self.Starting {
-		return "starting"
-
-	} else if self.Stopping {
-		return "stopping"
-
-	} else if self.Working {
-		return "working"
-
-	} else if self.IsStopped() {
+	case Stopped:
 		return "stopped"
 
-	} else {
+	case Starting:
+		return "starting"
+
+	case Working:
+		return "working"
+
+	case Stopping:
+		return "stopping"
+
+	default:
 		return "unknown"
 	}
 
 	return "error"
 }
 
-func (self *WorkerStatus) StringTitle() string {
+func (self WorkerStatus) StringTitle() string {
 	return strings.Title(self.String())
 }
 
-func (self *WorkerStatus) StringT() string {
+func (self WorkerStatus) StringT() string {
 	return self.StringTitle()
 }
 
-func (self *WorkerStatus) Sum(in []*WorkerStatus) {
-
-	res := New()
+func (self *WorkerStatus) Sum(in []WorkerStatus) {
 
 	for _, i := range in {
-		if i.Starting {
-			res.Starting = true
-			goto exit
+		if i == Starting {
+			*self = Starting
+			return
 		}
 	}
 
 	for _, i := range in {
-		if i.Stopping {
-			res.Stopping = true
-			goto exit
+		if i == Stopping {
+			*self = Stopping
+			return
 		}
 	}
 
 	for _, i := range in {
-		if i.Working {
-			res.Working = true
-			goto exit
+		if i == Working {
+			*self = Working
+			return
 		}
 	}
-
-exit:
-	self.UpdateSelf(res)
 
 	return
 

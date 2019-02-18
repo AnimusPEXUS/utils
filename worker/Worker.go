@@ -17,14 +17,21 @@ type WorkerThreadFunction func(
 
 )
 
-type WorkerInterface interface {
-	Start()
-	Stop()
-	Status() *workerstatus.WorkerStatus
+type EmptyStruct struct{}
+
+type WorkerControlChanResult chan EmptyStruct
+
+type WorkerI interface {
+	Start() WorkerControlChanResult
+	Stop() WorkerControlChanResult
+	Restart() WorkerControlChanResult
+	Status() workerstatus.WorkerStatus
 }
 
+var _ WorkerI = &Worker{}
+
 type Worker struct {
-	status *workerstatus.WorkerStatus
+	status workerstatus.WorkerStatus
 
 	thread_func WorkerThreadFunction
 
@@ -38,21 +45,21 @@ type Worker struct {
 func New(f WorkerThreadFunction) *Worker {
 	ret := new(Worker)
 
-	ret.status = workerstatus.New()
+	ret.status = workerstatus.Stopped
 	ret.thread_func = f
 	ret.start_stop_mutex = &sync.Mutex{}
 
 	return ret
 }
 
-func (self *Worker) Start() chan bool {
-	ret := make(chan bool, 1)
+func (self *Worker) Start() WorkerControlChanResult {
+	ret := make(WorkerControlChanResult, 1)
 	go func() {
 		self.start_stop_mutex.Lock()
 		defer self.start_stop_mutex.Unlock()
 
 		if self.status.Stopped() {
-			self.status.Starting = true
+			self.status = workerstatus.Starting
 			self.stop_flag = false
 			go func() {
 				defer func() {
@@ -61,24 +68,16 @@ func (self *Worker) Start() chan bool {
 				}()
 				self.thread_func(
 					func() {
-						self.status.Starting = true
-						self.status.Stopping = false
-						self.status.Working = false
+						self.status = workerstatus.Starting
 					},
 					func() {
-						self.status.Working = true
-						self.status.Starting = false
-						self.status.Stopping = false
+						self.status = workerstatus.Working
 					},
 					func() {
-						self.status.Stopping = true
-						self.status.Starting = false
-						self.status.Working = false
+						self.status = workerstatus.Stopping
 					},
 					func() {
-						self.status.Stopping = false
-						self.status.Starting = false
-						self.status.Working = false
+						self.status = workerstatus.Stopped
 					},
 					func() bool {
 						return self.stop_flag
@@ -86,33 +85,33 @@ func (self *Worker) Start() chan bool {
 				)
 			}()
 		}
-		ret <- true
+		ret <- EmptyStruct{}
 	}()
 	return ret
 }
 
-func (self *Worker) Stop() chan bool {
-	ret := make(chan bool, 1)
+func (self *Worker) Stop() WorkerControlChanResult {
+	ret := make(WorkerControlChanResult, 1)
 	go func() {
 		self.start_stop_mutex.Lock()
 		defer self.start_stop_mutex.Unlock()
 
 		self.stop_flag = true
-		ret <- true
+		ret <- EmptyStruct{}
 	}()
 	return ret
 }
 
-func (self *Worker) Restart() chan bool {
-	ret := make(chan bool, 1)
+func (self *Worker) Restart() WorkerControlChanResult {
+	ret := make(WorkerControlChanResult, 1)
 	go func() {
 		<-self.Stop()
 		<-self.Start()
-		ret <- true
+		ret <- EmptyStruct{}
 	}()
 	return ret
 }
 
-func (self *Worker) Status() *workerstatus.WorkerStatus {
+func (self *Worker) Status() workerstatus.WorkerStatus {
 	return self.status
 }
