@@ -66,12 +66,12 @@ func GetTextDocForFilesIdent(
 
 func UseGoDocInDir(dir string, sym string) (string, error) {
 
-	args := []string{"."}
+	args := []string{"doc", "."}
 	if sym != "" {
 		args = append(args, sym)
 	}
 
-	c := exec.Command("godoc", args...)
+	c := exec.Command("go", args...)
 	c.Dir = dir
 
 	b := &bytes.Buffer{}
