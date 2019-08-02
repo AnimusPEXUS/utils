@@ -1,12 +1,11 @@
-package gosignal
+package signal
 
 import (
-	"fmt"
+	"log"
 	"runtime"
 	"sync"
 	"unsafe"
 )
-
 
 /*
 	tryings to use runtime module to track for connected method unavailability
@@ -34,7 +33,7 @@ func (self *Signal0) Connect(f ListenerFunction) *Connector0 {
 	self.emition_mutex.Lock()
 
 	if DEBUG {
-		fmt.Println("signal", self, "connecting to", f)
+		log.Println("signal", self, "connecting to", f)
 	}
 
 	self.listeners[self.counter] = uintptr(unsafe.Pointer(&f))
@@ -43,7 +42,7 @@ func (self *Signal0) Connect(f ListenerFunction) *Connector0 {
 	ret.id = self.counter
 	ret.s = self
 	if DEBUG {
-		fmt.Println("   ", "created", ret, "with id", ret.id)
+		log.Println("   ", "created", ret, "with id", ret.id)
 	}
 
 	runtime.SetFinalizer(ret, self.connector_finalizer)
@@ -59,7 +58,7 @@ func (self *Signal0) Disconnect(id uint64) {
 	self.emition_mutex.Lock()
 
 	if DEBUG {
-		fmt.Println("disconnecting object with id", id)
+		log.Println("disconnecting object with id", id)
 	}
 
 	delete(self.listeners, id)
@@ -72,7 +71,7 @@ func (self *Signal0) connector_finalizer(obj *Connector0) {
 	self.emition_mutex.Lock()
 
 	if DEBUG {
-		fmt.Println("finalizing", obj, "with id", obj.id)
+		log.Println("finalizing", obj, "with id", obj.id)
 	}
 
 	delete(self.listeners, obj.id)
@@ -85,7 +84,7 @@ func (self *Signal0) Emit(data interface{}) {
 
 	for _, i := range self.listeners {
 		if DEBUG {
-			fmt.Println("emiting to", i)
+			log.Println("emiting to", i)
 		}
 
 		p := (unsafe.Pointer)(i)

@@ -1,7 +1,7 @@
-package gosignal
+package signal
 
 import (
-	"fmt"
+	"log"
 	"sync"
 )
 
@@ -9,6 +9,8 @@ type Signal1 struct {
 	listeners     map[uint64]ListenerFunction
 	emition_mutex *sync.Mutex
 	counter       uint64
+
+	Debug bool
 }
 
 func NewSignal1() *Signal1 {
@@ -17,6 +19,7 @@ func NewSignal1() *Signal1 {
 	ret.emition_mutex = new(sync.Mutex)
 	ret.listeners = make(map[uint64]ListenerFunction)
 	ret.counter = 0
+	ret.Debug = false
 
 	return ret
 }
@@ -26,8 +29,8 @@ func (self *Signal1) Connect(f ListenerFunction) *Connector1 {
 	defer self.emition_mutex.Unlock()
 	self.emition_mutex.Lock()
 
-	if DEBUG {
-		fmt.Println("signal", self, "connecting to", f)
+	if self.Debug {
+		log.Println("signal", self, "connecting to", f)
 	}
 
 	self.listeners[self.counter] = f
@@ -35,8 +38,8 @@ func (self *Signal1) Connect(f ListenerFunction) *Connector1 {
 	ret := new(Connector1)
 	ret.id = self.counter
 	ret.s = self
-	if DEBUG {
-		fmt.Println("   ", "created", ret, "with id", ret.id)
+	if self.Debug {
+		log.Println("   ", "created", ret, "with id", ret.id)
 	}
 
 	self.counter++
@@ -49,8 +52,8 @@ func (self *Signal1) Disconnect(id uint64) {
 	defer self.emition_mutex.Unlock()
 	self.emition_mutex.Lock()
 
-	if DEBUG {
-		fmt.Println("disconnecting object with id", id)
+	if self.Debug {
+		log.Println("disconnecting object with id", id)
 	}
 
 	delete(self.listeners, id)
@@ -63,8 +66,8 @@ func (self *Signal1) Emit(data interface{}) {
 	self.emition_mutex.Lock()
 
 	for _, i := range self.listeners {
-		if DEBUG {
-			fmt.Println("emiting to", i)
+		if self.Debug {
+			log.Println("emiting to", i)
 		}
 
 		go i(data)

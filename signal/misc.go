@@ -1,4 +1,4 @@
-package gosignal
+package signal
 
 const DEBUG = false
 
