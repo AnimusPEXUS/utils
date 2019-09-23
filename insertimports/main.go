@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"go/format"
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"strings"
 )
 
@@ -19,7 +19,7 @@ func main() {
 		imports[i] = fmt.Sprintf("\"%s\"", imports[i])
 	}
 
-	log.Println("going to open file", filename, "and insert folloving imports into it:")
+	log.Println("going to open file", filename, "and insert following imports into it:")
 	for _, i := range imports {
 		log.Println("  ", i)
 	}
@@ -38,6 +38,7 @@ func main() {
 		if strings.HasPrefix(i, "package") {
 			imports_line = ind
 			log.Println("found line", i, "which index is", ind)
+			log.Println("  inserting imports")
 			break
 		}
 	}
@@ -64,9 +65,18 @@ func main() {
 
 	ts = strings.Join(tss, "\n")
 
-	err = ioutil.WriteFile(filename, []byte(ts), 0700)
+	log.Println("formatting...")
+
+	t, err = format.Source([]byte(ts))
 	if err != nil {
 		log.Fatalln("error", err)
 	}
+
+	err = ioutil.WriteFile(filename, t, 0700)
+	if err != nil {
+		log.Fatalln("error", err)
+	}
+
+	log.Println("completed")
 
 }
