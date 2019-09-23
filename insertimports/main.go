@@ -1,32 +1,25 @@
-package main
+package insertimports
 
 import (
-	"fmt"
+	"errors"
 	"go/format"
 	"io/ioutil"
 	"log"
-	"os"
 	"strings"
 )
 
-func main() {
+func InsertImports(filename string, imports []string, verbose bool) error {
 
-	filename := os.Args[1]
-
-	imports := os.Args[2:]
-
-	for i := range imports {
-		imports[i] = fmt.Sprintf("\"%s\"", imports[i])
-	}
-
-	log.Println("going to open file", filename, "and insert following imports into it:")
-	for _, i := range imports {
-		log.Println("  ", i)
+	if verbose {
+		log.Println("reading", filename)
 	}
 
 	t, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Fatalln("error", err)
+		if verbose {
+			log.Println("error", err)
+		}
+		return err
 	}
 
 	ts := string(t)
@@ -36,15 +29,20 @@ func main() {
 	imports_line := -1
 	for ind, i := range tss {
 		if strings.HasPrefix(i, "package") {
+			if verbose {
+				log.Println("package found. inserting..")
+			}
 			imports_line = ind
-			log.Println("found line", i, "which index is", ind)
-			log.Println("  inserting imports")
 			break
 		}
 	}
 
 	if imports_line == -1 {
-		log.Fatalln("error", "can't find import's line")
+		err = errors.New("can't find import's line")
+		if verbose {
+			log.Println("error", err)
+		}
+		return err
 	}
 
 	imports_line++
@@ -54,7 +52,7 @@ func main() {
 		append(
 			append(
 				append(
-					[]string{"import ("},
+					[]string{"//inserted", "import ("},
 					imports...,
 				),
 				[]string{")"}...,
@@ -65,18 +63,35 @@ func main() {
 
 	ts = strings.Join(tss, "\n")
 
-	log.Println("formatting...")
+	// t = []byte(ts)
+
+	if verbose {
+		log.Println("formatting..")
+	}
 
 	t, err = format.Source([]byte(ts))
 	if err != nil {
-		log.Fatalln("error", err)
+		if verbose {
+			log.Println("error", err)
+		}
+		return err
+	}
+
+	if verbose {
+		log.Println("saving..")
 	}
 
 	err = ioutil.WriteFile(filename, t, 0700)
 	if err != nil {
-		log.Fatalln("error", err)
+		if verbose {
+			log.Println("error", err)
+		}
+		return err
 	}
 
-	log.Println("completed")
+	if verbose {
+		log.Println("complete")
+	}
 
+	return nil
 }
