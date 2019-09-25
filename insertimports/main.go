@@ -5,8 +5,23 @@ import (
 	"go/format"
 	"io/ioutil"
 	"log"
+	"regexp"
 	"strings"
 )
+
+func ReplaceImports(filename string, imports []string, verbose bool) error {
+	err := RemoveImports(filename, verbose)
+	if err != nil {
+		return err
+	}
+
+	err = InsertImports(filename, imports, verbose)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func InsertImports(filename string, imports []string, verbose bool) error {
 
@@ -91,6 +106,50 @@ func InsertImports(filename string, imports []string, verbose bool) error {
 
 	if verbose {
 		log.Println("complete")
+	}
+
+	return nil
+}
+
+func RemoveImports(filename string, verbose bool) error {
+	t, err := ioutil.ReadFile(filename)
+	if err != nil {
+		if verbose {
+			log.Println("error", err)
+		}
+		return err
+	}
+
+	{
+		braces, err := regexp.Compile(`(?sm)import\s*\(.*?\)`)
+		if err != nil {
+			if verbose {
+				log.Println("error", err)
+			}
+			return err
+		}
+
+		t = braces.ReplaceAll(t, []byte(""))
+	}
+
+	{
+		quotes, err := regexp.Compile(`import\s*".*?"`)
+		if err != nil {
+			if verbose {
+				log.Println("error", err)
+			}
+			return err
+		}
+
+		t = quotes.ReplaceAll(t, []byte(""))
+	}
+
+	err = ioutil.WriteFile(filename, t, 0700)
+	if err != nil {
+		if verbose {
+			log.Println("error", err)
+		}
+		return err
 	}
 
 	return nil
