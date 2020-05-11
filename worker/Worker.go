@@ -3,6 +3,7 @@ package worker
 import (
 	"sync"
 
+	sync_mod "github.com/AnimusPEXUS/utils/sync"
 	"github.com/AnimusPEXUS/utils/worker/workerstatus"
 )
 
@@ -20,12 +21,14 @@ type WorkerThreadFunction func(
 type EmptyStruct struct{}
 
 type WorkerControlChanResult chan EmptyStruct
+type WaitExitResult chan EmptyStruct
 
 type WorkerI interface {
 	Start() WorkerControlChanResult
 	Stop() WorkerControlChanResult
 	Restart() WorkerControlChanResult
 	Status() workerstatus.WorkerStatus
+	Wait() WaitExitResult
 }
 
 var _ WorkerI = &Worker{}
@@ -37,19 +40,24 @@ type Worker struct {
 
 	stop_flag        bool
 	start_stop_mutex *sync.Mutex
+	wait_lock        *sync_mod.MutexCheckable
+	wait_cond        *sync.Cond
 
 	//	signal_working *gosignal.Signal
 	//	signal_stopped *gosignal.Signal
 }
 
 func New(f WorkerThreadFunction) *Worker {
-	ret := new(Worker)
 
-	ret.status = workerstatus.Stopped
-	ret.thread_func = f
-	ret.start_stop_mutex = &sync.Mutex{}
+	self := new(Worker)
 
-	return ret
+	self.status = workerstatus.Stopped
+	self.thread_func = f
+	self.start_stop_mutex = &sync.Mutex{}
+	self.wait_lock = sync_mod.NewMutexCheckable(false)
+	self.wait_cond = sync.NewCond(self.wait_lock)
+
+	return self
 }
 
 func (self *Worker) Start() WorkerControlChanResult {
@@ -62,10 +70,13 @@ func (self *Worker) Start() WorkerControlChanResult {
 			self.status = workerstatus.Starting
 			self.stop_flag = false
 			go func() {
+
 				defer func() {
 					self.stop_flag = true
+					self.wait_cond.Broadcast()
 					self.status.Reset()
 				}()
+
 				self.thread_func(
 					func() {
 						self.status = workerstatus.Starting
@@ -84,6 +95,10 @@ func (self *Worker) Start() WorkerControlChanResult {
 					},
 				)
 			}()
+		} else {
+			// TODO: probably, some error code should be reported in this case
+			//       but this worker is intended to be working under some
+			//       watchdog, which supposed to do it either way.
 		}
 		ret <- EmptyStruct{}
 	}()
@@ -114,4 +129,19 @@ func (self *Worker) Restart() WorkerControlChanResult {
 
 func (self *Worker) Status() workerstatus.WorkerStatus {
 	return self.status
+}
+
+func (self *Worker) Wait() WaitExitResult {
+
+	c := make(WaitExitResult, 1)
+	if self.status.IsStopped() {
+		c <- EmptyStruct{}
+	} else {
+		go func() {
+			defer func() { c <- EmptyStruct{} }()
+			self.wait_cond.Wait()
+		}()
+	}
+
+	return c
 }
