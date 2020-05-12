@@ -27,14 +27,14 @@ type WorkerI interface {
 	Start() WorkerControlChanResult
 	Stop() WorkerControlChanResult
 	Restart() WorkerControlChanResult
-	Status() workerstatus.WorkerStatus
+	Status() *workerstatus.WorkerStatusRO
 	Wait() WaitExitResult
 }
 
 var _ WorkerI = &Worker{}
 
 type Worker struct {
-	status workerstatus.WorkerStatus
+	status *workerstatus.WorkerStatus
 
 	thread_func WorkerThreadFunction
 
@@ -51,7 +51,8 @@ func New(f WorkerThreadFunction) *Worker {
 
 	self := new(Worker)
 
-	self.status = workerstatus.Stopped
+	self.status = workerstatus.NewWorkerStatus(workerstatus.Stopped)
+
 	self.thread_func = f
 	self.start_stop_mutex = &sync.Mutex{}
 	self.wait_lock = sync_mod.NewMutexCheckable(false)
@@ -67,7 +68,7 @@ func (self *Worker) Start() WorkerControlChanResult {
 		defer self.start_stop_mutex.Unlock()
 
 		if self.status.Stopped() {
-			self.status = workerstatus.Starting
+			self.status.Set(workerstatus.Starting)
 			self.stop_flag = false
 			go func() {
 
@@ -79,16 +80,16 @@ func (self *Worker) Start() WorkerControlChanResult {
 
 				self.thread_func(
 					func() {
-						self.status = workerstatus.Starting
+						self.status.Set(workerstatus.Starting)
 					},
 					func() {
-						self.status = workerstatus.Working
+						self.status.Set(workerstatus.Working)
 					},
 					func() {
-						self.status = workerstatus.Stopping
+						self.status.Set(workerstatus.Stopping)
 					},
 					func() {
-						self.status = workerstatus.Stopped
+						self.status.Set(workerstatus.Stopped)
 					},
 					func() bool {
 						return self.stop_flag
@@ -127,8 +128,8 @@ func (self *Worker) Restart() WorkerControlChanResult {
 	return ret
 }
 
-func (self *Worker) Status() workerstatus.WorkerStatus {
-	return self.status
+func (self *Worker) Status() *workerstatus.WorkerStatusRO {
+	return &self.status.WorkerStatusRO
 }
 
 func (self *Worker) Wait() WaitExitResult {
