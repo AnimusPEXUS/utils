@@ -42,10 +42,15 @@ func (self *MutexCheckable) Lock() {
 		}
 	}()
 
+	// to make object functions available
 	if self.is_locked {
-		// to make object functions available
+		// self.s.Unlock() have to be called to allow calls to other functions
+		// of this object.
+		// this block available only if MutexCheckable already locked, so
+		// this is ok to call self.s.Unlock() now, as self.mutex_o.Lock()
+		// will already provide race safety
 		already_unlocked = true
-		go self.s.Unlock()
+		self.s.Unlock()
 	}
 
 	self.mutex_o.Lock()
