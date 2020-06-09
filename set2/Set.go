@@ -1,5 +1,13 @@
 package set2
 
+/*
+
+diffs to original set:
+  * support for custom comparison function
+  * better safety checks on items manipulations
+
+*/
+
 import (
 	"errors"
 	"reflect"
