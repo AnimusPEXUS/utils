@@ -434,7 +434,9 @@ func (self *CacheDir) CheckFileIntegrity(name string) (ok bool, fullpath string,
 	return
 }
 
-// returned file name automaticatty locked and will not be
+// Get() locks file with returned name, so Get() can be called asyncronously
+// and Get() will not return locked files.
+// files can be unlocked with Unlock(), Disable() or Delete() functions
 func (self *CacheDir) Get() (name string, data io.ReadCloser, err error) {
 	self._RWMutex.Lock()
 	defer self._RWMutex.Unlock()
