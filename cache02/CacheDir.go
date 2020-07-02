@@ -25,19 +25,22 @@ type CacheDir struct {
 	options *CacheDirOptions
 	lenwe   int
 
-	lockedFiles        []string
-	lockedFilesMutexRW *sync.RWMutex
+	lockedFiles []string
+
+	_RWMutex *sync.RWMutex
 }
 
 func NewCacheDir(options *CacheDirOptions) *CacheDir {
 	self := &CacheDir{options: options}
 	self.lenwe = len(options.WorkExtension)
 	self.lockedFiles = make([]string, 0)
-	self.lockedFilesMutexRW = &sync.RWMutex{}
+
+	self._RWMutex = &sync.RWMutex{}
 	return self
 }
 
 func (self *CacheDir) lockFile(name string) {
+
 	if !self.isLocked(name) {
 		self.lockedFiles = append(self.lockedFiles, name)
 	}
@@ -45,6 +48,7 @@ func (self *CacheDir) lockFile(name string) {
 }
 
 func (self *CacheDir) unlockFile(name string) {
+
 	for i := len(self.lockedFiles) - 1; i != -1; i = i - 1 {
 		if self.lockedFiles[i] == name {
 			self.lockedFiles = append(self.lockedFiles[:i], self.lockedFiles[i+1:]...)
@@ -55,6 +59,7 @@ func (self *CacheDir) unlockFile(name string) {
 }
 
 func (self *CacheDir) isLocked(name string) bool {
+
 	for _, i := range self.lockedFiles {
 		if i == name {
 			return true
@@ -116,12 +121,16 @@ func (self *CacheDir) JoinFileName(filename string) string {
 	return filepath.Join(self.options.DirPath, filename)
 }
 
+func (self *CacheDir) WorkingFiles() (ret []os.FileInfo, err error) {
+	self._RWMutex.RLock()
+	defer self._RWMutex.RUnlock()
+	return self.us_WorkingFiles()
+}
+
 // return file info for files, which names matching working cache names criteria
 // no checksum checking performed except echecksum file existance
 // doesn't return err, if no files found
-func (self *CacheDir) WorkingFiles() (ret []os.FileInfo, err error) {
-	self.lockedFilesMutexRW.RLock()
-	defer self.lockedFilesMutexRW.RUnlock()
+func (self *CacheDir) us_WorkingFiles() (ret []os.FileInfo, err error) {
 
 	ret = make([]os.FileInfo, 0)
 
@@ -170,8 +179,12 @@ func (self *CacheDir) WorkingFiles() (ret []os.FileInfo, err error) {
 // acceptable filenames should be already checked by self.WorkingFiles()
 // so NextFile() only find's the oldest one and treats any errors as not acceptable
 func (self *CacheDir) NextFile() (name string, err error) {
+	return self.us_NextFile()
+}
 
-	files, err := self.WorkingFiles()
+func (self *CacheDir) us_NextFile() (name string, err error) {
+
+	files, err := self.us_WorkingFiles()
 	if err != nil {
 		return
 	}
@@ -263,8 +276,15 @@ func (self *CacheDir) GenNames(oname string) (name, name_disabled, name_sum, nam
 }
 
 func (self *CacheDir) UnlockFile(name string) {
-	self.lockedFilesMutexRW.Lock()
-	defer self.lockedFilesMutexRW.Unlock()
+	self._RWMutex.Lock()
+	defer self._RWMutex.Unlock()
+
+	self.us_UnlockFile(name)
+
+	return
+}
+
+func (self *CacheDir) us_UnlockFile(name string) {
 
 	self.unlockFile(name)
 
@@ -272,30 +292,46 @@ func (self *CacheDir) UnlockFile(name string) {
 }
 
 func (self *CacheDir) Disable(name string) {
-	self.lockedFilesMutexRW.Lock()
-	defer self.lockedFilesMutexRW.Unlock()
+	self._RWMutex.Lock()
+	defer self._RWMutex.Unlock()
+
+	self.us_Disable(name)
+
+	return
+}
+
+func (self *CacheDir) us_Disable(name string) {
+	self._RWMutex.Lock()
+	defer self._RWMutex.Unlock()
+
+	nname, name_disabled, name_sum, name_sum_disabled := self.GenNames(name)
+
+	os.Rename(nname, name_disabled)
+	os.Rename(name_sum, name_sum_disabled)
 
 	self.unlockFile(name)
-
-	name, name_disabled, name_sum, name_sum_disabled := self.GenNames(name)
-
-	os.Rename(name, name_disabled)
-	os.Rename(name_sum, name_sum_disabled)
 
 	return
 }
 
 func (self *CacheDir) Delete(name string) {
-	self.lockedFilesMutexRW.Lock()
-	defer self.lockedFilesMutexRW.Unlock()
+	self._RWMutex.Lock()
+	defer self._RWMutex.Unlock()
 
-	self.unlockFile(name)
+	self.us_Delete(name)
 
-	name, name_disabled, name_sum, name_sum_disabled := self.GenNames(name)
+	return
+}
 
-	for _, i := range []string{name, name_disabled, name_sum, name_sum_disabled} {
+func (self *CacheDir) us_Delete(name string) {
+
+	nname, name_disabled, name_sum, name_sum_disabled := self.GenNames(name)
+
+	for _, i := range []string{nname, name_disabled, name_sum, name_sum_disabled} {
 		os.Remove(i)
 	}
+
+	self.unlockFile(name)
 
 	return
 }
@@ -398,12 +434,13 @@ func (self *CacheDir) CheckFileIntegrity(name string) (ok bool, fullpath string,
 	return
 }
 
+// returned file name automaticatty locked and will not be
 func (self *CacheDir) Get() (name string, data io.ReadCloser, err error) {
-	self.lockedFilesMutexRW.Lock()
-	defer self.lockedFilesMutexRW.Unlock()
+	self._RWMutex.Lock()
+	defer self._RWMutex.Unlock()
 
 start:
-	nextfilename, err := self.NextFile()
+	nextfilename, err := self.us_NextFile()
 	if err != nil {
 		return
 	}
@@ -423,14 +460,14 @@ start:
 		if err != nil {
 			goto disable_and_restart
 		}
+		self.lockFile(name)
 		name = filepath.Base(nextfilename)
 		data = f
-		self.lockFile(name)
 		return
 	}
 
 disable_and_restart:
-	self.Disable(name)
+	self.us_Disable(name)
 	goto start
 
 	return
