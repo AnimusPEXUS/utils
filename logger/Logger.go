@@ -135,7 +135,7 @@ func (self *Logger) addOutputOpt(out interface{}, opts *OutputOptions) uint64 {
 	case io.WriteCloser:
 	case LoggerI:
 	default:
-		panic("only io.Writer, io.WriteCloser or *Logger may be passed")
+		panic("only io.Writer, io.WriteCloser or LoggerI may be passed")
 	}
 	ret := self.output_counter
 	self.outputs[ret] = &WriterWrapper{out, opts}
@@ -176,23 +176,25 @@ func (self *Logger) ResetOutput() {
 }
 
 func (self *Logger) PutEntry(type_ EntryType, value interface{}) {
-	self.mutex.Lock()
-	defer self.mutex.Unlock()
+	go func() {
+		self.mutex.Lock()
+		defer self.mutex.Unlock()
 
-	value_str := "error"
+		value_str := "error"
 
-	switch value.(type) {
-	case string:
-		value_str = value.(string)
-	case error:
-		value_str = value.(error).Error()
-	default:
-		value_str = reflect.ValueOf(value).String()
-	}
+		switch value.(type) {
+		case string:
+			value_str = value.(string)
+		case error:
+			value_str = value.(error).Error()
+		default:
+			value_str = reflect.ValueOf(value).String()
+		}
 
-	log_entry := &LogEntry{type_, time.Now().UTC(), value_str}
+		log_entry := &LogEntry{type_, time.Now().UTC(), value_str}
 
-	self.PutEntryComplete(log_entry)
+		self.PutEntryComplete(log_entry)
+	}()
 }
 
 func (self *Logger) PutEntryComplete(entry *LogEntry) {
@@ -208,6 +210,7 @@ func (self *Logger) PutEntryComplete(entry *LogEntry) {
 			i *WriterWrapper,
 			wg *sync.WaitGroup,
 		) {
+			defer wg.Done()
 			switch i.out.(type) {
 			case io.Writer:
 				self._WriteOutput(i, entry)
@@ -216,7 +219,6 @@ func (self *Logger) PutEntryComplete(entry *LogEntry) {
 			case LoggerI:
 				i.out.(LoggerI).PutEntryComplete(entry)
 			}
-			wg.Done()
 		}(i, wg)
 	}
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"os"
 
 	"github.com/AnimusPEXUS/utils/logger"
@@ -17,5 +18,9 @@ func main() {
 	l.Info("test info")
 	l.Warning("test warning")
 	l.Error("test error")
+
+	in_reader := bufio.NewReader(os.Stdin)
+
+	in_reader.ReadLine()
 
 }

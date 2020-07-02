@@ -1,6 +1,9 @@
-/directory/test/t01
 *~
+/cache02/example/example
+/cache02/example/testcache
+/directory/test/t01
+/domainname/tests/tests
+/insertimports/insertimports
+/logger/test/test
 /signal/test/s0/s0
 /signal/test/s2/s2
-/insertimports/insertimports
-/domainname/tests/tests
