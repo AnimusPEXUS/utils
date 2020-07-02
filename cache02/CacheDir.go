@@ -41,7 +41,7 @@ func (self *CacheDir) lockFile(name string) {
 	if !self.isLocked(name) {
 		self.lockedFiles = append(self.lockedFiles, name)
 	}
-	return nil
+	return
 }
 
 func (self *CacheDir) unlockFile(name string) {
@@ -51,7 +51,7 @@ func (self *CacheDir) unlockFile(name string) {
 			break
 		}
 	}
-	return nil
+	return
 }
 
 func (self *CacheDir) isLocked(name string) bool {
