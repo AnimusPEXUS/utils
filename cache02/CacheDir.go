@@ -143,6 +143,10 @@ func (self *CacheDir) WorkingFiles() (ret []os.FileInfo, err error) {
 			goto remove
 		}
 
+		if self.isLocked(name) {
+			goto remove
+		}
+
 		{
 			_, _, name_sum, _ := self.GenNames(name)
 			_, err = os.Stat(name_sum)
