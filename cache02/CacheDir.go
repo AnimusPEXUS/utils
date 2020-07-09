@@ -440,7 +440,7 @@ func (self *CacheDir) Get() (name string, data io.ReadCloser, err error) {
 	defer self._RWMutex.Unlock()
 
 start:
-	name, err := self.us_NextFile()
+	name, err = self.us_NextFile()
 	if err != nil {
 		return
 	}
