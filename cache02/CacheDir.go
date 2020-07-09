@@ -460,8 +460,8 @@ start:
 		if err != nil {
 			goto disable_and_restart
 		}
-		self.lockFile(name)
 		name = filepath.Base(nextfilename)
+		self.lockFile(name)
 		data = f
 		return
 	}
