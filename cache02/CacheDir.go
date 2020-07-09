@@ -301,8 +301,6 @@ func (self *CacheDir) Disable(name string) {
 }
 
 func (self *CacheDir) us_Disable(name string) {
-	self._RWMutex.Lock()
-	defer self._RWMutex.Unlock()
 
 	nname, name_disabled, name_sum, name_sum_disabled := self.GenNames(name)
 
