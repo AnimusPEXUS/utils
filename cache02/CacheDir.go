@@ -440,12 +440,12 @@ func (self *CacheDir) Get() (name string, data io.ReadCloser, err error) {
 	defer self._RWMutex.Unlock()
 
 start:
-	nextfilename, err := self.us_NextFile()
+	name, err := self.us_NextFile()
 	if err != nil {
 		return
 	}
 
-	ok, fullpath, err := self.CheckFileIntegrity(nextfilename)
+	ok, fullpath, err := self.CheckFileIntegrity(name)
 	if err != nil {
 		goto disable_and_restart
 	}
@@ -460,7 +460,7 @@ start:
 		if err != nil {
 			goto disable_and_restart
 		}
-		name = filepath.Base(nextfilename)
+		name = filepath.Base(name)
 		self.lockFile(name)
 		data = f
 		return
