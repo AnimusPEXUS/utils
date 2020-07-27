@@ -58,7 +58,7 @@ func NewCacheDir(options *CacheDirOptions) *CacheDir {
 	self.lockedFiles = make([]string, 0)
 
 	self._RWMutex = &sync.RWMutex{}
-	self.cached_working_files = make([]os.FileInfo)
+	self.cached_working_files = make([]os.FileInfo, 0)
 
 	// don't allow user to change this value during runtime
 	// self.unix_conn_enabled = self.options.UnixSocketEnabled
