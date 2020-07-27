@@ -40,6 +40,8 @@ type CacheDir struct {
 
 	lockedFiles []string
 
+	cached_working_files []os.FileInfo
+
 	_RWMutex *sync.RWMutex
 
 	// unix_conn_enabled     bool
@@ -296,29 +298,48 @@ func (self *CacheDir) NextFile() (name string, err error) {
 
 func (self *CacheDir) us_NextFile() (name string, err error) {
 
-	files, err := self.us_WorkingFiles()
-	if err != nil {
-		return
-	}
-
-	if len(files) == 0 {
-		err = os.ErrNotExist
-		return
-	}
-
-	oldest := files[0]
-
-	for _, i := range files[1:] {
-		var comp_res int
-		comp_res, err = self.ComparisonFunction(oldest, i)
+	if len(self.cached_working_files) == 0 {
+		var files []os.FileInfo
+		files, err = self.us_WorkingFiles()
 		if err != nil {
 			return
 		}
 
-		if comp_res > 0 {
-			oldest = i
+		len_files := len(files)
+
+		if len_files < 2 {
+			self.cached_working_files = files
+			goto ifexit
 		}
+
+		for i := 0; i != len_files-1; i++ {
+			for j := i + 1; j != len_files; j++ {
+				var comp_res int
+				comp_res, err = self.ComparisonFunction(files[i], files[j])
+				if err != nil {
+					return
+				}
+
+				if comp_res < 0 {
+					z := files[i]
+					files[i] = files[j]
+					files[j] = z
+				}
+
+			}
+		}
+
+		self.cached_working_files = files
 	}
+ifexit:
+
+	if len(self.cached_working_files) == 0 {
+		err = os.ErrNotExist
+		return
+	}
+
+	oldest := self.cached_working_files[0]
+	self.cached_working_files = self.cached_working_files[1:]
 
 	name = oldest.Name()
 
