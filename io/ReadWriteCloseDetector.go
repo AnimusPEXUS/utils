@@ -1,20 +1,16 @@
 package io
 
-import "io"
+import "os"
 
-// this is experimental and not well tested yet
-
-// var _ io.WriterAt = (interface{}(CloseDetector{})).(io.WriterAt)
-
-type ReadWriteCloseDetector struct {
-	io.ReadWriteCloser
+type FileCloseDetector struct {
+	os.File
 	CBBeforeSimple func()
 	CBAfterSimple  func()
-	CBBefore       func(self *ReadWriteCloseDetector) (cancel bool, err_to_return error, force_err_to_return bool, err error)
-	CBAfter        func(self *ReadWriteCloseDetector, res error) (err_to_return error, force_err_to_return bool, err error)
+	CBBefore       func(self *FileCloseDetector) (cancel bool, err_to_return error, force_err_to_return bool, err error)
+	CBAfter        func(self *FileCloseDetector, res error) (err_to_return error, force_err_to_return bool, err error)
 }
 
-func (self *ReadWriteCloseDetector) Close() error {
+func (self *FileCloseDetector) Close() error {
 
 	var err error
 	var err_to_return error
@@ -38,7 +34,7 @@ func (self *ReadWriteCloseDetector) Close() error {
 		self.CBBeforeSimple()
 	}
 
-	err = self.ReadWriteCloser.Close()
+	err = self.File.Close()
 
 	if self.CBAfter != nil {
 		err_to_return, force_err_to_return, err = self.CBAfter(self, err)
