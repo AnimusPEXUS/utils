@@ -6,15 +6,15 @@ import "io"
 
 // var _ io.WriterAt = (interface{}(CloseDetector{})).(io.WriterAt)
 
-type CloseDetector struct {
-	Object         interface{}
+type ReadWriteCloseDetector struct {
+	io.ReadWriteCloser
 	CBBeforeSimple func()
 	CBAfterSimple  func()
-	CBBefore       func(self *CloseDetector) (cancel bool, err_to_return error, force_err_to_return bool, err error)
-	CBAfter        func(self *CloseDetector, res error) (err_to_return error, force_err_to_return bool, err error)
+	CBBefore       func(self *ReadWriteCloseDetector) (cancel bool, err_to_return error, force_err_to_return bool, err error)
+	CBAfter        func(self *ReadWriteCloseDetector, res error) (err_to_return error, force_err_to_return bool, err error)
 }
 
-func (self *CloseDetector) Close() error {
+func (self *ReadWriteCloseDetector) Close() error {
 
 	var err error
 	var err_to_return error
@@ -38,12 +38,7 @@ func (self *CloseDetector) Close() error {
 		self.CBBeforeSimple()
 	}
 
-	{
-		closer, ok := self.Object.(io.Closer)
-		if ok {
-			err = closer.Close()
-		}
-	}
+	err = self.ReadWriteCloser.Close()
 
 	if self.CBAfter != nil {
 		err_to_return, force_err_to_return, err = self.CBAfter(self, err)
