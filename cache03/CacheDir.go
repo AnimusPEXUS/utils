@@ -22,6 +22,8 @@ import (
 // also, the us_NextFile (and NextFile throught it) transparently caches list
 // of files, to minimise calls to ioutil.ListDit() and speedup in case if
 // many files is stored in the cache
+//
+// Also cache03 have some more useful functions
 
 // TODO: add trigger, using inotify
 
@@ -399,7 +401,9 @@ func (self *CacheDir) ComparisonFunction(f1, f2 os.FileInfo) (int, error) {
 // }
 
 // TODO: probaby, this function requires optimization
-// oname must be suffixed with WorkExtension. it will be suffized automatically, if it's not
+// oname may be suffixed with WorkExtension. it will be suffized automatically, if it isn't
+// this function strips path from oname and uses only oname Base
+// resulting values are joined with path, so they are full path names
 func (self *CacheDir) GenNames(oname string) (name, name_disabled, name_sum, name_sum_disabled string) {
 	if !strings.HasSuffix(oname, self.options.WorkExtension) {
 		oname = oname + self.options.WorkExtension
@@ -431,6 +435,28 @@ func (self *CacheDir) UnlockFile(name string) {
 func (self *CacheDir) us_UnlockFile(name string) {
 
 	self.unlockFile(name)
+
+	return
+}
+
+func (self *CacheDir) Enable(name string) {
+	self._RWMutex.Lock()
+	defer self._RWMutex.Unlock()
+
+	self.us_Enamble(name)
+
+	return
+}
+
+func (self *CacheDir) us_Enamble(name string) {
+
+	nname, name_disabled, name_sum, name_sum_disabled := self.GenNames(name)
+
+	os.Rename(name_disabled, nname)
+	os.Rename(name_sum_disabled, name_sum)
+
+	// TODO: this is not needed here, right?
+	// self.unlockFile(name)
 
 	return
 }
@@ -478,10 +504,60 @@ func (self *CacheDir) us_Delete(name string) {
 	return
 }
 
+func (self *CacheDir) NewNameForCache() string {
+	name := time.Now().UTC().Format(time.RFC3339Nano) + self.options.WorkExtension
+	name, _, _, _ = self.GenNames(name)
+	return name
+}
+
+func (self *CacheDir) CreateCache() (*os.File, error) {
+	name := self.NewNameForCache()
+	name, _, _, _ = self.GenNames(name)
+
+	return os.Create(name)
+}
+
+func (self *CacheDir) CreateSumForCache(name string, signal bool) error {
+
+	name, _, name_sum, _ := self.GenNames(name)
+
+	f, err := os.Open(name)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	h := self.options.HashMaker()
+
+	_, err = io.Copy(h, f)
+	if err != nil {
+		return err
+	}
+
+	sum := h.Sum([]byte{})
+
+	err = ioutil.WriteFile(name_sum, []byte(hex.EncodeToString(sum)), 0o700)
+	if err != nil {
+		return err
+	}
+
+	if signal {
+		go func() {
+			err := self.MakeSignalIfSocketEnabled()
+			if err != nil {
+				log.Println("error sending signal to cache reciever:", err)
+			}
+		}()
+	}
+
+	return nil
+}
+
+// Put doesn't calls Close() on data
 func (self *CacheDir) Put(data io.Reader) (err error) {
 
-	name := time.Now().UTC().Format(time.RFC3339Nano) + self.options.WorkExtension
-
+	name := self.NewNameForCache()
 	name, _, name_sum, _ := self.GenNames(name)
 
 	_, err = os.Stat(name)
@@ -499,6 +575,7 @@ func (self *CacheDir) Put(data io.Reader) (err error) {
 	if err != nil {
 		return
 	}
+	defer f.Close()
 
 	h := self.options.HashMaker()
 
@@ -515,37 +592,34 @@ func (self *CacheDir) Put(data io.Reader) (err error) {
 	}
 
 	sum := h.Sum([]byte{})
-	f, err = os.Create(name_sum)
+
+	err = ioutil.WriteFile(name_sum, []byte(hex.EncodeToString(sum)), 0o700)
 	if err != nil {
 		return
 	}
 
-	_, err = f.WriteString(hex.EncodeToString(sum))
-	if err != nil {
-		return
-	}
-
-	err = f.Close()
-	if err != nil {
-		return
-	}
-
-	if self.options.UnixSocketEnabled {
-		go func() {
-			conn, err := net.DialUnix("unixgram", nil, self.unix_conn_addr)
-			if err != nil {
-				log.Println("err:", err)
-				return
-			}
-			_, err = conn.Write([]byte{1})
-			if err != nil {
-				log.Println("err:", err)
-				return
-			}
-		}()
-	}
+	go func() {
+		err := self.MakeSignalIfSocketEnabled()
+		if err != nil {
+			log.Println("error sending signal to cache reciever:", err)
+		}
+	}()
 
 	return
+}
+
+func (self *CacheDir) MakeSignalIfSocketEnabled() error {
+	if self.options.UnixSocketEnabled {
+		conn, err := net.DialUnix("unixgram", nil, self.unix_conn_addr)
+		if err != nil {
+			return err
+		}
+		_, err = conn.Write([]byte{1})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (self *CacheDir) CheckFileIntegrity(name string) (ok bool, fullpath string, err error) {
