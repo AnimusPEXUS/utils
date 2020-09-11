@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/AnimusPEXUS/utils/version"
+	"github.com/AnimusPEXUS/utils/tarballversion"
 )
 
 func main() {
