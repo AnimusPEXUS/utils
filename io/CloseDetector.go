@@ -2,8 +2,12 @@ package io
 
 import "io"
 
+// this is experimental and not well tested yet
+
+// var _ io.WriterAt = (interface{}(CloseDetector{})).(io.WriterAt)
+
 type CloseDetector struct {
-	io.Closer
+	Object         interface{}
 	CBBeforeSimple func()
 	CBAfterSimple  func()
 	CBBefore       func(self *CloseDetector) (cancel bool, err_to_return error, force_err_to_return bool, err error)
@@ -34,7 +38,12 @@ func (self *CloseDetector) Close() error {
 		self.CBBeforeSimple()
 	}
 
-	err = self.Closer.Close()
+	{
+		closer, ok := self.Object.(io.Closer)
+		if ok {
+			err = closer.Close()
+		}
+	}
 
 	if self.CBAfter != nil {
 		err_to_return, force_err_to_return, err = self.CBAfter(self, err)
