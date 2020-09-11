@@ -18,7 +18,12 @@ import (
 )
 
 // cache03 adds optional (by default disabled) UNIX Socket to cache02, so when
-// new document pushed into cache - socket is triggered
+// new document pushed into cache - socket is triggered.
+// also, the us_NextFile (and NextFile throught it) transparently caches list
+// of files, to minimise calls to ioutil.ListDit() and speedup in case if
+// many files is stored in the cache
+
+// TODO: add trigger, using inotify
 
 type EmptyStruct struct{}
 
@@ -358,6 +363,11 @@ func (self *CacheDir) ParseWorkFileName(n string) (t time.Time, err error) {
 func (self *CacheDir) ParseWorkFileNameByFileInfo(fi os.FileInfo) (t time.Time, err error) {
 	return self.ParseWorkFileName(fi.Name())
 }
+
+// NOTE: synonym not needed imo
+// func (self *CacheDir) TimeFromName(name string) (t time.Time, err error) {
+// 	return self.ParseWorkFileName(name)
+// }
 
 func (self *CacheDir) ComparisonFunction(f1, f2 os.FileInfo) (int, error) {
 
