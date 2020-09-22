@@ -31,6 +31,10 @@ func (self *DebugTools) newFile(subject string, ext string) (*os.File, error) {
 	return os.Create(filepath.Join(self.options.LogsDir, fn))
 }
 
+func (self *DebugTools) LogRemove(filename string) error {
+	return os.Remove(filepath.Join(self.options.LogsDir, filepath.Base(filename)))
+}
+
 func (self *DebugTools) LogList() ([]string, error) {
 	file_list, err := ioutil.ReadDir(self.options.LogsDir)
 	if err != nil {
