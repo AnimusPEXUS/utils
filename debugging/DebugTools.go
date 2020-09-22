@@ -1,4 +1,4 @@
-package rpchandlercollection
+package debugging
 
 import (
 	"fmt"
