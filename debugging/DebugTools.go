@@ -11,17 +11,28 @@ import (
 	"time"
 )
 
-type DebugTools struct {
+type DebugToolsOptions struct {
 	LogsDir string
+}
+
+type DebugTools struct {
+	options *DebugToolsOptions
+}
+
+func NewDebugTools(options *DebugToolsOptions) (*DebugTools, error) {
+	self := &DebugTools{
+		options: options,
+	}
+	return self, nil
 }
 
 func (self *DebugTools) newFile(subject string, ext string) (*os.File, error) {
 	fn := fmt.Sprintf("%s.%s.%s", time.Now().Format(time.RFC3339Nano), subject, ext)
-	return os.Create(filepath.Join(self.LogsDir, fn))
+	return os.Create(filepath.Join(self.options.LogsDir, fn))
 }
 
 func (self *DebugTools) LogList() ([]string, error) {
-	file_list, err := ioutil.ReadDir(self.LogsDir)
+	file_list, err := ioutil.ReadDir(self.options.LogsDir)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +48,7 @@ func (self *DebugTools) LogList() ([]string, error) {
 }
 
 func (self *DebugTools) LogSize(filename string) (int64, error) {
-	s, err := os.Stat(filepath.Join(self.LogsDir, filepath.Base(filename)))
+	s, err := os.Stat(filepath.Join(self.options.LogsDir, filepath.Base(filename)))
 	if err != nil {
 		return 0, err
 	}
@@ -45,7 +56,7 @@ func (self *DebugTools) LogSize(filename string) (int64, error) {
 }
 
 func (self *DebugTools) LogSlice(filename string, index, size int64) (string, []byte, error) {
-	f, err := os.Open(filepath.Join(self.LogsDir, filepath.Base(filename)))
+	f, err := os.Open(filepath.Join(self.options.LogsDir, filepath.Base(filename)))
 	if err != nil {
 		return "", nil, err
 	}
