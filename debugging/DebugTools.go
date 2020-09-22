@@ -59,10 +59,10 @@ func (self *DebugTools) LogSize(filename string) (int64, error) {
 	return s.Size(), nil
 }
 
-func (self *DebugTools) LogSlice(filename string, index, size int64) (string, []byte, error) {
+func (self *DebugTools) LogSlice(filename string, index, size int64) ([]byte, error) {
 	f, err := os.Open(filepath.Join(self.options.LogsDir, filepath.Base(filename)))
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
 	defer f.Close()
 
@@ -70,10 +70,10 @@ func (self *DebugTools) LogSlice(filename string, index, size int64) (string, []
 
 	_, err = f.ReadAt(buf, index)
 	if err != nil {
-		return f.Name(), buf, err
+		return buf, err
 	}
 
-	return f.Name(), buf, nil
+	return buf, nil
 }
 
 func (self *DebugTools) HeapDump() (string, error) {
