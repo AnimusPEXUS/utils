@@ -1,7 +1,6 @@
 package debugging
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -12,7 +11,8 @@ import (
 )
 
 type DebugToolsOptions struct {
-	LogsDir string
+	LogsDir       string
+	ComponentName string
 }
 
 type DebugTools struct {
@@ -27,7 +27,12 @@ func NewDebugTools(options *DebugToolsOptions) (*DebugTools, error) {
 }
 
 func (self *DebugTools) newFile(subject string, ext string) (*os.File, error) {
-	fn := fmt.Sprintf("%s.%s.%s", time.Now().Format(time.RFC3339Nano), subject, ext)
+	var fn string
+	fn = time.Now().Format(time.RFC3339Nano)
+	if self.options.ComponentName != "" {
+		fn += "." + self.options.ComponentName
+	}
+	fn += "." + subject + "." + ext
 	return os.Create(filepath.Join(self.options.LogsDir, fn))
 }
 

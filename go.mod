@@ -8,5 +8,6 @@ require (
 	github.com/antchfx/xquery v0.0.0-20180515051857-ad5b8c7a47b0
 	github.com/go-ini/ini v1.61.0
 	github.com/satori/go.uuid v1.2.0
-	golang.org/x/sys v0.0.0-20200922070232-aee5d888a860
+	golang.org/x/net v0.0.0-20201002202402-0a1ea396d57c // indirect
+	golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f
 )
