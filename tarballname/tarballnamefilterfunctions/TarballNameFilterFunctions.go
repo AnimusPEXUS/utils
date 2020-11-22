@@ -5,7 +5,7 @@ import (
 	"path"
 	"regexp"
 
-	"github.com/AnimusPEXUS/aipsetup/basictypes"
+	"github.com/AnimusPEXUS/utils/softwareunit"
 	"github.com/AnimusPEXUS/utils/tarballname/tarballnameparsers"
 	"github.com/AnimusPEXUS/utils/textlist"
 )
@@ -44,11 +44,11 @@ func StatusFilterFunction(
 	data map[string]interface{},
 ) (bool, error) {
 
-	info, ok := data["pkg_info"].(*basictypes.PackageInfo)
+	info, ok := data["pkg_info"].(*softwareunit.PackageInfo)
 	if !ok {
 		return false,
 			errors.New(
-				"StatusFilterFunction requires data[\"pkg_info\"] of type *basictypes.PackageInfo",
+				"StatusFilterFunction requires data[\"pkg_info\"] of type *softwareunit.PackageInfo",
 			)
 	}
 
