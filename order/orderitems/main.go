@@ -125,8 +125,6 @@ last_loop:
 
 func _MoveTargetElementByRules(lst *list.List, input_e *list.Element, rule *OrderingRulesItem) (err error) {
 
-	input_e_uuid := input_e.Value.(uuid.UUID)
-
 	switch rule.Rule {
 	case OrderingRuleFirst:
 		lst.MoveToFront(input_e)
