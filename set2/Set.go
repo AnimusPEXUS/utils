@@ -74,6 +74,8 @@ func (self *Set) SetEQCheckFunc(f EQCheckFunc) {
 func (self *Set) _DefineSetType(value interface{}) {
 	if self.t == nil {
 		self.t = reflect.TypeOf(value)
+	}
+	if self.fIsEQCheckFunc == nil {
 		if self.t.Kind() == reflect.String {
 			self.fIsEQCheckFunc = StringsEQFunc
 		}
