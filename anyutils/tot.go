@@ -97,24 +97,24 @@ func TraverseObjectTree002(
 	default:
 		return nil, false, errors.New("invalid object tree structure")
 	case reflect.Interface:
-		return c_ot_l.Interface(), nil
+		return c_ot_l.Interface(), true, nil
 	case reflect.Uint:
 	case reflect.Uint8:
 	case reflect.Uint16:
 	case reflect.Uint32:
 	case reflect.Uint64:
-		return c_ot_l.Uint(), nil
+		return c_ot_l.Uint(), true, nil
 	case reflect.Int:
 	case reflect.Int8:
 	case reflect.Int16:
 	case reflect.Int32:
 	case reflect.Int64:
-		return c_ot_l.Int(), nil
+		return c_ot_l.Int(), true, nil
 	case reflect.String:
-		return c_ot_l.String(), nil
+		return c_ot_l.String(), true, nil
 	case reflect.Float32:
 	case reflect.Float64:
-		return c_ot_l.Float(), nil
+		return c_ot_l.Float(), true, nil
 	}
 	return nil, false, errors.New("unexpected error")
 }
