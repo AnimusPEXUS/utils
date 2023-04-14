@@ -8,51 +8,51 @@ import (
 // NOTE: it is unadvised to use this function until
 // golang gets conditional compilation. othervise this function generates excessive unused code
 // https://github.com/golang/go/issues/45380
-func TraverseObjectTree001[T string | float32 | float64](object_tree any, names ...string) (T, error) {
+// func TraverseObjectTree001[T string | float32 | float64](object_tree any, names ...string) (T, error) {
 
-	var zero_T T
+// 	var zero_T T
 
-	// value of object_tree
-	vo_ot := reflect.ValueOf(object_tree)
+// 	// value of object_tree
+// 	vo_ot := reflect.ValueOf(object_tree)
 
-	// current object tree leaf
-	c_ot_l := vo_ot
+// 	// current object tree leaf
+// 	c_ot_l := vo_ot
 
-	for _, i := range names {
-		// fmt.Println("ii:", ii, " i:", i)
+// 	for _, i := range names {
+// 		// fmt.Println("ii:", ii, " i:", i)
 
-		if c_ot_l.Kind() == reflect.Map {
-			c_ot_l = c_ot_l.MapIndex(reflect.ValueOf(i))
-		} else {
-			return zero_T, errors.New("invalid object tree structure")
-		}
-	}
+// 		if c_ot_l.Kind() == reflect.Map {
+// 			c_ot_l = c_ot_l.MapIndex(reflect.ValueOf(i))
+// 		} else {
+// 			return zero_T, errors.New("invalid object tree structure")
+// 		}
+// 	}
 
-	if c_ot_l.Kind() == reflect.Interface {
-		c_ot_l = c_ot_l.Elem()
-	}
+// 	if c_ot_l.Kind() == reflect.Interface {
+// 		c_ot_l = c_ot_l.Elem()
+// 	}
 
-	switch any(zero_T).(type) {
-	default:
-		panic("programming error")
-	case string:
-		if c_ot_l.Kind() != reflect.String {
-			return zero_T, errors.New("invalid object tree structure")
-		}
-		return any(c_ot_l.String()).(T), nil
-	case float32:
-	case float64:
-		switch c_ot_l.Kind() {
-		default:
-			return zero_T, errors.New("invalid object tree structure")
-		case reflect.Float32:
-		case reflect.Float64:
-			return any(c_ot_l.Float()).(T), nil
-		}
-		return zero_T, errors.New("invalid object tree structure")
-	}
-	return zero_T, errors.New("programming error")
-}
+// 	switch any(zero_T).(type) {
+// 	default:
+// 		panic("programming error")
+// 	case string:
+// 		if c_ot_l.Kind() != reflect.String {
+// 			return zero_T, errors.New("invalid object tree structure")
+// 		}
+// 		return any(c_ot_l.String()).(T), nil
+// 	case float32:
+// 	case float64:
+// 		switch c_ot_l.Kind() {
+// 		default:
+// 			return zero_T, errors.New("invalid object tree structure")
+// 		case reflect.Float32:
+// 		case reflect.Float64:
+// 			return any(c_ot_l.Float()).(T), nil
+// 		}
+// 		return zero_T, errors.New("invalid object tree structure")
+// 	}
+// 	return zero_T, errors.New("programming error")
+// }
 
 // results: 0 - value, 1 - found, 2 - error
 func TraverseObjectTree002(
