@@ -2,7 +2,6 @@ package anyutils
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 )
 
@@ -19,8 +18,8 @@ func TraverseObjectTree001[T string | float32 | float64](object_tree any, names 
 	// current object tree leaf
 	c_ot_l := vo_ot
 
-	for ii, i := range names {
-		fmt.Println("ii:", ii, " i:", i)
+	for _, i := range names {
+		// fmt.Println("ii:", ii, " i:", i)
 
 		if c_ot_l.Kind() == reflect.Map {
 			c_ot_l = c_ot_l.MapIndex(reflect.ValueOf(i))
@@ -55,20 +54,36 @@ func TraverseObjectTree001[T string | float32 | float64](object_tree any, names 
 	return zero_T, errors.New("programming error")
 }
 
-func TraverseObjectTree002(object_tree any, unwrap_last_any bool, names ...string) (any, error) {
+// results: 0 - value, 1 - found, 2 - error
+func TraverseObjectTree002(
+	object_tree any,
+	unwrap_last_any bool,
+	not_found_not_error bool,
+	names ...string,
+) (any, bool, error) {
 	// value of object_tree
 	vo_ot := reflect.ValueOf(object_tree)
 
 	// current object tree leaf
 	c_ot_l := vo_ot
 
-	for ii, i := range names {
-		fmt.Println("ii:", ii, " i:", i)
+	// names_l := len(names)
+
+	for _, i := range names {
+		// fmt.Println("ii:", ii, " i:", i)
 
 		if c_ot_l.Kind() == reflect.Map {
 			c_ot_l = c_ot_l.MapIndex(reflect.ValueOf(i))
+			iszero := c_ot_l.IsZero()
+			if iszero {
+				if not_found_not_error {
+					return nil, false, nil
+				} else {
+					return nil, false, errors.New("item not found")
+				}
+			}
 		} else {
-			return nil, errors.New("invalid object tree structure")
+			return nil, false, errors.New("invalid object tree structure")
 		}
 	}
 
@@ -80,7 +95,7 @@ func TraverseObjectTree002(object_tree any, unwrap_last_any bool, names ...strin
 
 	switch c_ot_l.Kind() {
 	default:
-		return nil, errors.New("invalid object tree structure")
+		return nil, false, errors.New("invalid object tree structure")
 	case reflect.Interface:
 		return c_ot_l.Interface(), nil
 	case reflect.Uint:
@@ -101,13 +116,33 @@ func TraverseObjectTree002(object_tree any, unwrap_last_any bool, names ...strin
 	case reflect.Float64:
 		return c_ot_l.Float(), nil
 	}
-	return nil, errors.New("invalid object tree structure")
+	return nil, false, errors.New("unexpected error")
 }
 
-func TraverseObjectTree002_float64(object_tree any, unwrap_last_any bool, names ...string) (float64, bool, error) {
-	res, err := TraverseObjectTree002(object_tree, unwrap_last_any, names...)
+// results: 0 - value, 1 - found, 2 - error
+func TraverseObjectTree002_float64(
+	object_tree any,
+	unwrap_last_any bool,
+	not_found_not_error bool,
+	names ...string,
+) (float64, bool, error) {
+	res, found, err := TraverseObjectTree002(
+		object_tree,
+		unwrap_last_any,
+		not_found_not_error,
+		names...,
+	)
+
+	if !found {
+		if not_found_not_error {
+			return 0, false, nil
+		} else {
+			return 0, false, errors.New("not found")
+		}
+	}
+
 	if err != nil {
-		return 0, false, err
+		return 0, found, err
 	}
 
 	var ret float64
@@ -115,27 +150,46 @@ func TraverseObjectTree002_float64(object_tree any, unwrap_last_any bool, names 
 
 	switch res.(type) {
 	default:
-		return ret, false, errors.New("no type match")
+		return ret, found, errors.New("no type match")
 	case float32:
 		ret_x, ok := res.(float32)
 		if !ok {
-			return 0, false, errors.New("can't obtain float32")
+			return 0, found, errors.New("can't obtain float32")
 		}
 		ret = float64(ret_x)
-		return ret, true, nil
+		return ret, found, nil
 	case float64:
 		ret, ok = res.(float64)
 		if !ok {
 			return 0, false, errors.New("can't obtain float64")
 		}
-		return ret, true, nil
+		return ret, found, nil
 	}
 }
 
-func TraverseObjectTree002_string(object_tree any, unwrap_last_any bool, names ...string) (string, bool, error) {
-	res, err := TraverseObjectTree002(object_tree, unwrap_last_any, names...)
+func TraverseObjectTree002_string(
+	object_tree any,
+	unwrap_last_any bool,
+	not_found_not_error bool,
+	names ...string,
+) (string, bool, error) {
+	res, found, err := TraverseObjectTree002(
+		object_tree,
+		unwrap_last_any,
+		not_found_not_error,
+		names...,
+	)
+
+	if !found {
+		if not_found_not_error {
+			return "", false, nil
+		} else {
+			return "", false, errors.New("not found")
+		}
+	}
+
 	if err != nil {
-		return "", false, err
+		return "", found, err
 	}
 
 	var ret string
