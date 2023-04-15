@@ -70,12 +70,11 @@ func TraverseObjectTree002(
 	// names_l := len(names)
 
 	for _, i := range names {
-		// fmt.Println("ii:", ii, " i:", i)
 
 		if c_ot_l.Kind() == reflect.Map {
 			c_ot_l = c_ot_l.MapIndex(reflect.ValueOf(i))
-			iszero := c_ot_l.IsZero()
-			if iszero {
+			isvalid := c_ot_l.IsValid()
+			if !isvalid {
 				if not_found_not_error {
 					return nil, false, nil
 				} else {
@@ -205,4 +204,94 @@ func TraverseObjectTree002_string(
 		}
 		return ret, true, nil
 	}
+}
+
+func TraverseObjectTree002_int64(
+	object_tree any,
+	unwrap_last_any bool,
+	not_found_not_error bool,
+	names ...string,
+) (int64, bool, error) {
+	res, found, err := TraverseObjectTree002(
+		object_tree,
+		unwrap_last_any,
+		not_found_not_error,
+		names...,
+	)
+
+	if !found {
+		if not_found_not_error {
+			return 0, false, nil
+		} else {
+			return 0, false, errors.New("not found")
+		}
+	}
+
+	if err != nil {
+		return 0, found, err
+	}
+
+	var ret int64
+	var ok bool
+
+	switch res.(type) {
+	default:
+		return ret, false, errors.New("no type match")
+	case int:
+	case int8:
+	case int16:
+	case int32:
+	case int64:
+		ret, ok = res.(int64)
+		if !ok {
+			return 0, false, errors.New("can't obtain float64")
+		}
+		return ret, true, nil
+	}
+	return 0, false, errors.New("unexpected error")
+}
+
+func TraverseObjectTree002_uint64(
+	object_tree any,
+	unwrap_last_any bool,
+	not_found_not_error bool,
+	names ...string,
+) (uint64, bool, error) {
+	res, found, err := TraverseObjectTree002(
+		object_tree,
+		unwrap_last_any,
+		not_found_not_error,
+		names...,
+	)
+
+	if !found {
+		if not_found_not_error {
+			return 0, false, nil
+		} else {
+			return 0, false, errors.New("not found")
+		}
+	}
+
+	if err != nil {
+		return 0, found, err
+	}
+
+	var ret uint64
+	var ok bool
+
+	switch res.(type) {
+	default:
+		return ret, false, errors.New("no type match")
+	case uint:
+	case uint8:
+	case uint16:
+	case uint32:
+	case uint64:
+		ret, ok = res.(uint64)
+		if !ok {
+			return 0, false, errors.New("can't obtain float64")
+		}
+		return ret, true, nil
+	}
+	return 0, false, errors.New("unexpected error")
 }
