@@ -41,12 +41,12 @@ import (
 // 		}
 // 		return any(c_ot_l.String()).(T), nil
 // 	case float32:
+// fallthrough
 // 	case float64:
 // 		switch c_ot_l.Kind() {
 // 		default:
 // 			return zero_T, errors.New("invalid object tree structure")
-// 		case reflect.Float32:
-// 		case reflect.Float64:
+// 		case reflect.Float32, reflect.Float64:
 // 			return any(c_ot_l.Float()).(T), nil
 // 		}
 // 		return zero_T, errors.New("invalid object tree structure")
@@ -97,25 +97,23 @@ func TraverseObjectTree002(
 		return nil, false, errors.New("invalid object tree structure")
 	case reflect.Interface:
 		return c_ot_l.Interface(), true, nil
-	case reflect.Uint:
-	case reflect.Uint8:
-	case reflect.Uint16:
-	case reflect.Uint32:
-	case reflect.Uint64:
+	case reflect.Uint,
+		reflect.Uint8,
+		reflect.Uint16,
+		reflect.Uint32,
+		reflect.Uint64:
 		return c_ot_l.Uint(), true, nil
-	case reflect.Int:
-	case reflect.Int8:
-	case reflect.Int16:
-	case reflect.Int32:
-	case reflect.Int64:
+	case reflect.Int,
+		reflect.Int8,
+		reflect.Int16,
+		reflect.Int32,
+		reflect.Int64:
 		return c_ot_l.Int(), true, nil
 	case reflect.String:
 		return c_ot_l.String(), true, nil
-	case reflect.Float32:
-	case reflect.Float64:
+	case reflect.Float32, reflect.Float64:
 		return c_ot_l.Float(), true, nil
 	}
-	return nil, false, errors.New("unexpected error")
 }
 
 // results: 0 - value, 1 - found, 2 - error
@@ -237,18 +235,13 @@ func TraverseObjectTree002_int64(
 	switch res.(type) {
 	default:
 		return ret, false, errors.New("no type match")
-	case int:
-	case int8:
-	case int16:
-	case int32:
-	case int64:
+	case int, int8, int16, int32, int64:
 		ret, ok = res.(int64)
 		if !ok {
 			return 0, false, errors.New("can't obtain float64")
 		}
 		return ret, true, nil
 	}
-	return 0, false, errors.New("unexpected error")
 }
 
 func TraverseObjectTree002_uint64(
@@ -282,16 +275,11 @@ func TraverseObjectTree002_uint64(
 	switch res.(type) {
 	default:
 		return ret, false, errors.New("no type match")
-	case uint:
-	case uint8:
-	case uint16:
-	case uint32:
-	case uint64:
+	case uint, uint8, uint16, uint32, uint64:
 		ret, ok = res.(uint64)
 		if !ok {
 			return 0, false, errors.New("can't obtain float64")
 		}
 		return ret, true, nil
 	}
-	return 0, false, errors.New("unexpected error")
 }
