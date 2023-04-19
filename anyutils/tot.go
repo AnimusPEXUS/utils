@@ -164,6 +164,7 @@ func TraverseObjectTree002_float64(
 	}
 }
 
+// results: 0 - value, 1 - found, 2 - error
 func TraverseObjectTree002_string(
 	object_tree any,
 	unwrap_last_any bool,
@@ -204,6 +205,7 @@ func TraverseObjectTree002_string(
 	}
 }
 
+// results: 0 - value, 1 - found, 2 - error
 func TraverseObjectTree002_int64(
 	object_tree any,
 	unwrap_last_any bool,
@@ -244,6 +246,7 @@ func TraverseObjectTree002_int64(
 	}
 }
 
+// results: 0 - value, 1 - found, 2 - error
 func TraverseObjectTree002_uint64(
 	object_tree any,
 	unwrap_last_any bool,
@@ -284,6 +287,7 @@ func TraverseObjectTree002_uint64(
 	}
 }
 
+// results: 0 - value, 1 - found, 2 - error
 func TraverseObjectTree002_int(
 	object_tree any,
 	unwrap_last_any bool,
@@ -324,6 +328,7 @@ func TraverseObjectTree002_int(
 	}
 }
 
+// results: 0 - value, 1 - found, 2 - error
 func TraverseObjectTree002_uint(
 	object_tree any,
 	unwrap_last_any bool,
