@@ -198,7 +198,7 @@ func TraverseObjectTree002_string(
 	case string:
 		ret, ok = res.(string)
 		if !ok {
-			return "", false, errors.New("can't obtain float64")
+			return "", false, errors.New("can't obtain string")
 		}
 		return ret, true, nil
 	}
@@ -238,7 +238,7 @@ func TraverseObjectTree002_int64(
 	case int, int8, int16, int32, int64:
 		ret, ok = res.(int64)
 		if !ok {
-			return 0, false, errors.New("can't obtain float64")
+			return 0, false, errors.New("can't obtain int64")
 		}
 		return ret, true, nil
 	}
@@ -278,7 +278,87 @@ func TraverseObjectTree002_uint64(
 	case uint, uint8, uint16, uint32, uint64:
 		ret, ok = res.(uint64)
 		if !ok {
-			return 0, false, errors.New("can't obtain float64")
+			return 0, false, errors.New("can't obtain uint64")
+		}
+		return ret, true, nil
+	}
+}
+
+func TraverseObjectTree002_int(
+	object_tree any,
+	unwrap_last_any bool,
+	not_found_not_error bool,
+	names ...string,
+) (int, bool, error) {
+	res, found, err := TraverseObjectTree002(
+		object_tree,
+		unwrap_last_any,
+		not_found_not_error,
+		names...,
+	)
+
+	if !found {
+		if not_found_not_error {
+			return 0, false, nil
+		} else {
+			return 0, false, errors.New("not found")
+		}
+	}
+
+	if err != nil {
+		return 0, found, err
+	}
+
+	var ret int
+	var ok bool
+
+	switch res.(type) {
+	default:
+		return ret, false, errors.New("no type match")
+	case int, int8, int16, int32, int64:
+		ret, ok = res.(int)
+		if !ok {
+			return 0, false, errors.New("can't obtain int")
+		}
+		return ret, true, nil
+	}
+}
+
+func TraverseObjectTree002_uint(
+	object_tree any,
+	unwrap_last_any bool,
+	not_found_not_error bool,
+	names ...string,
+) (uint, bool, error) {
+	res, found, err := TraverseObjectTree002(
+		object_tree,
+		unwrap_last_any,
+		not_found_not_error,
+		names...,
+	)
+
+	if !found {
+		if not_found_not_error {
+			return 0, false, nil
+		} else {
+			return 0, false, errors.New("not found")
+		}
+	}
+
+	if err != nil {
+		return 0, found, err
+	}
+
+	var ret uint
+	var ok bool
+
+	switch res.(type) {
+	default:
+		return ret, false, errors.New("no type match")
+	case uint, uint8, uint16, uint32, uint64:
+		ret, ok = res.(uint)
+		if !ok {
+			return 0, false, errors.New("can't obtain uint")
 		}
 		return ret, true, nil
 	}
