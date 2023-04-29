@@ -404,7 +404,48 @@ func TraverseObjectTree002_str_list(
 	case []string:
 		ret, ok = res.([]string)
 		if !ok {
-			return 0, false, errors.New("can't obtain []string")
+			return []string{}, false, errors.New("can't obtain []string")
+		}
+		return ret, true, nil
+	}
+}
+
+// results: 0 - value, 1 - found, 2 - error
+func TraverseObjectTree002_byte_list(
+	object_tree any,
+	unwrap_last_any bool,
+	not_found_not_error bool,
+	names ...string,
+) ([]byte, bool, error) {
+	res, found, err := TraverseObjectTree002(
+		object_tree,
+		unwrap_last_any,
+		not_found_not_error,
+		names...,
+	)
+
+	if !found {
+		if not_found_not_error {
+			return []byte{}, false, nil
+		} else {
+			return []byte{}, false, errors.New("not found")
+		}
+	}
+
+	if err != nil {
+		return []byte{}, found, err
+	}
+
+	var ret []byte
+	var ok bool
+
+	switch res.(type) {
+	default:
+		return ret, false, errors.New("no type match")
+	case []byte:
+		ret, ok = res.([]byte)
+		if !ok {
+			return []byte{}, false, errors.New("can't obtain []byte")
 		}
 		return ret, true, nil
 	}
