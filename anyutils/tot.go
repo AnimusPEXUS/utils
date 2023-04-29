@@ -404,7 +404,7 @@ func TraverseObjectTree002_str_list(
 	case []string:
 		ret, ok = res.([]string)
 		if !ok {
-			return 0, false, errors.New("can't obtain uint")
+			return 0, false, errors.New("can't obtain []string")
 		}
 		return ret, true, nil
 	}
