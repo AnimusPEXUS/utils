@@ -368,3 +368,44 @@ func TraverseObjectTree002_uint(
 		return ret, true, nil
 	}
 }
+
+// results: 0 - value, 1 - found, 2 - error
+func TraverseObjectTree002_str_list(
+	object_tree any,
+	unwrap_last_any bool,
+	not_found_not_error bool,
+	names ...string,
+) ([]string, bool, error) {
+	res, found, err := TraverseObjectTree002(
+		object_tree,
+		unwrap_last_any,
+		not_found_not_error,
+		names...,
+	)
+
+	if !found {
+		if not_found_not_error {
+			return []string{}, false, nil
+		} else {
+			return []string{}, false, errors.New("not found")
+		}
+	}
+
+	if err != nil {
+		return []string{}, found, err
+	}
+
+	var ret []string
+	var ok bool
+
+	switch res.(type) {
+	default:
+		return ret, false, errors.New("no type match")
+	case []string:
+		ret, ok = res.([]string)
+		if !ok {
+			return 0, false, errors.New("can't obtain uint")
+		}
+		return ret, true, nil
+	}
+}
