@@ -1,4 +1,4 @@
-GONOPROXY="github.com/AnimusPEXUS/*"
+GONOPROXY=github.com/AnimusPEXUS/*
 
 all: get
 
