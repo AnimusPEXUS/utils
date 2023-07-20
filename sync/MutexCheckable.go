@@ -18,6 +18,7 @@ type MutexCheckable struct {
 
 // set locked to true, to make resulting Mutex already locked on creation
 func NewMutexCheckable(locked bool) *MutexCheckable {
+	panic("deprecated. use golockercheckable")
 	self := &MutexCheckable{
 		is_locked: locked,
 		mutex_o:   &sync_o.Mutex{},
