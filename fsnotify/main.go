@@ -10,7 +10,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/AnimusPEXUS/utils/worker"
+	"github.com/AnimusPEXUS/goworker"
 	"golang.org/x/sys/unix"
 )
 
@@ -28,7 +28,7 @@ type Watcher struct {
 	fdFile     *os.File
 	filename   string
 	watchdescs []uint32
-	worker     *worker.Worker
+	worker     *goworker.Worker
 
 	on_event_or_error_sync func(*Event, error)
 }
@@ -40,7 +40,7 @@ func NewWatcher(flags int, on_event_or_error_sync func(*Event, error)) *Watcher 
 		on_event_or_error_sync: on_event_or_error_sync,
 	}
 
-	self.worker = worker.New(self.readLoop)
+	self.worker = goworker.New(self.readLoop)
 
 	// NOTE: looks like it's ok to leave it empty
 	self.filename = "inotify"
@@ -57,7 +57,7 @@ func (self *Watcher) readError(err error) {
 	self.on_event_or_error_sync(nil, err)
 }
 
-func (self *Watcher) GetWorker() worker.WorkerI {
+func (self *Watcher) GetWorker() goworker.WorkerI {
 	return self.worker
 }
 
@@ -113,12 +113,12 @@ func (self *Watcher) readLoop(
 		return
 	}
 
-	stop_flag := make(chan worker.EmptyStruct)
+	stop_flag := make(chan goworker.EmptyStruct)
 
 	go func() {
 		defer func() {
 			go func() {
-				stop_flag <- worker.EmptyStruct{}
+				stop_flag <- goworker.EmptyStruct{}
 			}()
 		}()
 		for {

@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AnimusPEXUS/utils/worker"
+	"github.com/AnimusPEXUS/goworker"
 )
 
 // cache03 adds optional (by default disabled) UNIX Socket to cache02, so when
@@ -54,7 +54,7 @@ type CacheDir struct {
 	// unix_conn_enabled     bool
 	unix_conn_addr        *net.UnixAddr
 	unix_conn             *net.UnixConn
-	unix_conn_worker      *worker.Worker
+	unix_conn_worker      *goworker.Worker
 	unix_conn_server_chan chan EmptyStruct
 }
 
@@ -70,7 +70,7 @@ func NewCacheDir(options *CacheDirOptions) *CacheDir {
 	// don't allow user to change this value during runtime
 	// self.unix_conn_enabled = self.options.UnixSocketEnabled
 
-	self.unix_conn_worker = worker.New(self.unixSocketSideWorkerThread)
+	self.unix_conn_worker = goworker.New(self.unixSocketSideWorkerThread)
 
 	if self.options.UnixSocketEnabled {
 		self.unix_conn_addr = &net.UnixAddr{
@@ -153,7 +153,7 @@ func (self *CacheDir) unixSocketSideWorkerThread(
 	}
 }
 
-func (self *CacheDir) GetServerThreadWorker() worker.WorkerI {
+func (self *CacheDir) GetServerThreadWorker() goworker.WorkerI {
 	return self.unix_conn_worker
 }
 
