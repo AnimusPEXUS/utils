@@ -1,7 +1,9 @@
-github.com/AnimusPEXUS/golockercheckable v0.0.0-20230720142101-c18c8d2e2212 h1:FlnUY8A7jNNoQqgMPOHB1QuMtC9+1DALw+SHM19v3CA=
-github.com/AnimusPEXUS/golockercheckable v0.0.0-20230720142101-c18c8d2e2212/go.mod h1:JKRD/6+u2NdqZ4DG7LSXue5joMEUN9kbY0UYgejE6s4=
-github.com/AnimusPEXUS/goworker v0.0.0-20230722022549-6b2d4e08cd4e h1:x0V4qvEB5mZaPEBpnKemvZc2GRSmnJDOQQgY9/dpV2w=
-github.com/AnimusPEXUS/goworker v0.0.0-20230722022549-6b2d4e08cd4e/go.mod h1:vQbiUqXGjWIDbMZrXWy222rzXoYWZXmLaKgaRc2iHB4=
+github.com/AnimusPEXUS/golockercheckable v0.0.0-20241025221425-815bf2bf8fd3 h1:OR/IFwBgQ+9qY+EqLWBS+hqn9waa1ZRHwrMi1v4DREs=
+github.com/AnimusPEXUS/golockercheckable v0.0.0-20241025221425-815bf2bf8fd3/go.mod h1:b/+hmGESVIrFh/m6rQAa0ZH96xmNpr5zJIL2Q5yvZU4=
+github.com/AnimusPEXUS/goroutineid v0.0.0-20241025221308-aa62e013d180 h1:7iQqtcwVjzz0/cw71TbzUrImOZ82P7FAt+qk0TLVWBw=
+github.com/AnimusPEXUS/goroutineid v0.0.0-20241025221308-aa62e013d180/go.mod h1:nvGQ3smR7NE+EdX5epGM+GDsMKwshXAUdT6hkdBIoWU=
+github.com/AnimusPEXUS/goworker v0.0.0-20241025221611-f223af334498 h1:EcUcV8l+qWd3BapLFHXpH08oxg5oXZirSFG2APyxwNU=
+github.com/AnimusPEXUS/goworker v0.0.0-20241025221611-f223af334498/go.mod h1:NXpkv7EQWg31B8FH/Di12ZhupaorK7gKyiPLRDPgE0I=
 github.com/antchfx/htmlquery v1.3.3 h1:x6tVzrRhVNfECDaVxnZi1mEGrQg3mjE/rxbH2Pe6dNE=
 github.com/antchfx/htmlquery v1.3.3/go.mod h1:WeU3N7/rL6mb6dCwtE30dURBnBieKDC/fR8t6X+cKjU=
 github.com/antchfx/xpath v1.3.2 h1:LNjzlsSjinu3bQpw9hWMY9ocB80oLOWuQqFvO6xt51U=
